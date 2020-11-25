@@ -2,6 +2,7 @@ package ru.taxi.adminpanel.vaddin.views.main;
 
 import java.util.Optional;
 
+import com.vaadin.cdi.annotation.UIScoped;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -17,6 +18,7 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 import ru.taxi.adminpanel.vaddin.views.dashboard.DashboardView;
 import ru.taxi.adminpanel.vaddin.views.about.AboutView;
@@ -24,6 +26,7 @@ import ru.taxi.adminpanel.vaddin.views.about.AboutView;
 /**
  * The main view is a top-level placeholder for other views.
  */
+@Route(value = "main-view")
 @JsModule("./styles/shared-styles.js")
 @CssImport("./styles/views/main/main-view.css")
 public class MainView extends AppLayout {

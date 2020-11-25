@@ -8,6 +8,7 @@ plugins {
     id 'maven-publish'
     id 'java-library'
     id 'io.spring.dependency-management' version '1.0.10.RELEASE'
+    id 'war'
 }
 
 ext {
@@ -34,11 +35,13 @@ configurations {
 
 dependencies {
     implementation 'com.vaadin:vaadin:17.0.10'
+    compile group: 'com.vaadin', name: 'vaadin-cdi', version: '12.0.1'
     implementation 'com.vaadin:vaadin-spring-boot-starter:17.0.10'
     implementation 'org.vaadin.artur:a-vaadin-helper:1.5.0'
     implementation 'org.vaadin.artur.exampledata:exampledata:2.3.1'
-    implementation 'com.h2database:h2:1.4.200'
+    compile group: 'org.vaadin.spring.addons', name: 'vaadin-spring-addon-eventbus', version: '14.0.0'
     compile group: 'javax.inject', name: 'javax.inject', version: '1'
+    providedCompile group: 'javax.enterprise', name: 'cdi-api', version: '2.0.SP1'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa:2.3.2.RELEASE'
     implementation 'org.springframework.boot:spring-boot-devtools:2.3.2.RELEASE'
@@ -54,6 +57,9 @@ dependencies {
     implementation group: 'org.hibernate', name: 'hibernate-core', version: '5.4.21.Final'
 
     implementation group: 'org.hibernate.common', name: 'hibernate-commons-annotations', version: '5.1.0.Final'
+    compile group: 'org.jeasy', name: 'easy-random-core', version: '5.0.0'
+
+    runtimeOnly 'org.postgresql:postgresql'
 
     implementation 'com.google.code.gson:gson:2.8.5'
     compileOnly 'org.projectlombok:lombok'

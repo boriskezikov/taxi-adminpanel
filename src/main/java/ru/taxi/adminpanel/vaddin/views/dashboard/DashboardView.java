@@ -1,7 +1,6 @@
 package ru.taxi.adminpanel.vaddin.views.dashboard;
 
-import com.vaadin.flow.component.combobox.ComboBox;
-import com.vaadin.flow.component.datepicker.DatePicker;
+import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.grid.Grid;
@@ -10,32 +9,30 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.gridpro.GridPro;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.orderedlayout.FlexComponent.Alignment;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.data.renderer.LocalDateRenderer;
+import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
+import com.vaadin.flow.data.renderer.TextRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.spring.annotation.SpringComponent;
+import com.vaadin.flow.spring.annotation.UIScope;
 import org.apache.commons.lang3.StringUtils;
 import ru.taxi.adminpanel.backend.domain.TripRecord;
 import ru.taxi.adminpanel.backend.service.RecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
-import javax.inject.Inject;
 import java.text.NumberFormat;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Locale;
 
 @Route(value = "admin-panel", layout = MainView.class)
+@SpringComponent
+@UIScope
 @PageTitle("Dashboard")
 @CssImport(value = "./styles/views/dashboard/dashboard-view.css", include = "lumo-badge")
 @JsModule("@vaadin/vaadin-lumo-styles/badge.js")
@@ -44,19 +41,18 @@ public class DashboardView extends Div {
 
     private GridPro<TripRecord> grid;
     private ListDataProvider<TripRecord> dataProvider;
-    @Inject
-    private RecordService recordService;
+    private final RecordService recordService;
 
     private Grid.Column<TripRecord> idColumn;
     private Grid.Column<TripRecord> uuidColumn;
     private Grid.Column<TripRecord> fromColumn;
     private Grid.Column<TripRecord> toColumn;
     private Grid.Column<TripRecord> priceColumn;
-    private Grid.Column<TripRecord> statusColumn;
     private Grid.Column<TripRecord> beginColumn;
     private Grid.Column<TripRecord> endColumn;
 
-    public DashboardView() {
+    public DashboardView(RecordService recordService) {
+        this.recordService = recordService;
         setId("dashboard-view");
         setSizeFull();
         createGrid();
@@ -75,34 +71,40 @@ public class DashboardView extends Div {
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
         grid.setHeight("100%");
 
-        dataProvider = new ListDataProvider<TripRecord>(recordService.findAll());
+        dataProvider = new ListDataProvider<>(recordService.findAll());
         grid.setDataProvider(dataProvider);
     }
 
     private void addColumnsToGrid() {
         createIdColumn();
-        createClientColumn();
+        createUuidColumn();
+
         createPriceColumn();
-        createStatusColumn();
-        createDateColumn();
+
+        createFromColumn();
+        createToColumn();
+
+        createBeginColumn();
+        createEndColumn();
     }
 
     private void createIdColumn() {
-        idColumn = grid.addColumn(TripRecord::getId, "id").setHeader("ID").setWidth("120px").setFlexGrow(0);
+        idColumn = grid.addColumn(TripRecord::getId, "id").setHeader("ID");
+    }
+    private void createUuidColumn(){
+        uuidColumn = grid.addColumn(TripRecord::getUuid, "uuid").setHeader("uuid");
     }
 
-//    private void createClientColumn() {
-//        toColumn = grid.addColumn(new ComponentRenderer<>(client -> {
-//            HorizontalLayout hl = new HorizontalLayout();
-//            hl.setAlignItems(Alignment.CENTER);
-//            Image img = new Image(client.getImg(), "");
-//            Span span = new Span();
-//            span.setClassName("name");
-//            span.setText(client.getClient());
-//            hl.add(img, span);
-//            return hl;
-//        })).setComparator(client -> client.getClient()).setHeader("Client");
-//    }
+    private void createFromColumn(){
+        fromColumn = grid.addColumn(TripRecord::getFromAddress)
+        .setComparator(TripRecord::getFromAddress).setHeader("From address");
+    }
+
+    private void createToColumn(){
+        toColumn = grid.addColumn(TripRecord::getToAddress)
+                .setComparator(TripRecord::getToAddress).setHeader("To address");
+    }
+
 
     private void createPriceColumn() {
         priceColumn = grid
@@ -112,22 +114,20 @@ public class DashboardView extends Div {
                 .setComparator(TripRecord::getPrice).setHeader("Trip price");
     }
 
-//    private void createStatusColumn() {
-//        statusColumn = grid.addEditColumn(Client::getClient, new ComponentRenderer<>(client -> {
-//            Span span = new Span();
-//            span.setText(client.getStatus());
-//            span.getElement().setAttribute("theme", "badge " + client.getStatus().toLowerCase());
-//            return span;
-//        })).select(Client::setStatus, Arrays.asList("Pending", "Success", "Error"))
-//                .setComparator(Client::getStatus).setHeader("Status");
-//    }
-
-    private void createDateColumn() {
-        endColumn = grid
-                .addColumn(new LocalDateRenderer<>(client -> LocalDate.parse(client.getDate()),
-                        DateTimeFormatter.ofPattern("M/d/yyyy")))
-                .setComparator(Client::getDate).setHeader("Date").setWidth("180px").setFlexGrow(0);
+    private void createBeginColumn() {
+        beginColumn = grid
+                .addColumn(new LocalDateTimeRenderer<>(TripRecord::getTripBeginTime,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                .setComparator(TripRecord::getTripBeginTime).setHeader("Begin time");
     }
+
+    private void createEndColumn() {
+        endColumn = grid
+                .addColumn(new LocalDateTimeRenderer<>(TripRecord::getTripEndTime,
+                        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
+                .setComparator(TripRecord::getTripEndTime).setHeader("End time");
+    }
+
 
     private void addFiltersToGrid() {
         HeaderRow filterRow = grid.appendHeaderRow();
@@ -141,14 +141,6 @@ public class DashboardView extends Div {
                 trip -> StringUtils.containsIgnoreCase(trip.getId().toString(), idFilter.getValue())));
         filterRow.getCell(idColumn).setComponent(idFilter);
 
-//        TextField clientFilter = new TextField();
-//        clientFilter.setPlaceholder("Filter");
-//        clientFilter.setClearButtonVisible(true);
-//        clientFilter.setWidth("100%");
-//        clientFilter.setValueChangeMode(ValueChangeMode.EAGER);
-//        clientFilter.addValueChangeListener(event -> dataProvider
-//                .addFilter(trip -> StringUtils.containsIgnoreCase(trip.getClient(), clientFilter.getValue())));
-//        filterRow.getCell(toColumn).setComponent(clientFilter);
 
         TextField priceFilter = new TextField();
         priceFilter.setPlaceholder("Filter");
@@ -159,36 +151,28 @@ public class DashboardView extends Div {
                 .containsIgnoreCase(Double.toString(trip.getPrice()), priceFilter.getValue())));
         filterRow.getCell(priceColumn).setComponent(priceFilter);
 
-//        ComboBox<String> statusFilter = new ComboBox<>();
-//        statusFilter.setItems(Arrays.asList("Pending", "Success", "Error"));
-//        statusFilter.setPlaceholder("Filter");
-//        statusFilter.setClearButtonVisible(true);
-//        statusFilter.setWidth("100%");
-//        statusFilter.addValueChangeListener(
-//                event -> dataProvider.addFilter(client -> areStatusesEqual(client, statusFilter)));
-//        filterRow.getCell(statusColumn).setComponent(statusFilter);
 
-        DatePicker dateFilter = new DatePicker();
-        dateFilter.setPlaceholder("Filter");
-        dateFilter.setClearButtonVisible(true);
-        dateFilter.setWidth("100%");
-        dateFilter.addValueChangeListener(event -> dataProvider.addFilter(client -> areDatesEqual(client, dateFilter)));
-        filterRow.getCell(endColumn).setComponent(dateFilter);
+        DateTimePicker dateBeginFilter = new DateTimePicker();
+        dateBeginFilter.setDatePlaceholder("Date Filter");
+        dateBeginFilter.setTimePlaceholder("Time Filter");
+//        dateBeginFilter.setClearButtonVisible(true);
+        dateBeginFilter.setWidth("100%");
+        dateBeginFilter.addValueChangeListener(event -> dataProvider.addFilter(trip -> areDatesEqual(trip.getTripBeginTime(), dateBeginFilter)));
+        filterRow.getCell(endColumn).setComponent(dateBeginFilter);
+
+        DateTimePicker dateEndFilter = new DateTimePicker();
+        dateEndFilter.setDatePlaceholder("Date Filter");
+        dateEndFilter.setTimePlaceholder("Time Filter");
+        dateEndFilter.setWidth("100%");
+        dateEndFilter.addValueChangeListener(event -> dataProvider.addFilter(trip -> areDatesEqual(trip.getTripEndTime(), dateEndFilter)));
+        filterRow.getCell(beginColumn).setComponent(dateEndFilter);
     }
 
-//    private boolean areStatusesEqual(Client client, ComboBox<String> statusFilter) {
-//        String statusFilterValue = statusFilter.getValue();
-//        if (statusFilterValue != null) {
-//            return StringUtils.equals(client.getStatus(), statusFilterValue);
-//        }
-//        return true;
-//    }
 
-    private boolean areDatesEqual(Client client, DatePicker dateFilter) {
-        LocalDate dateFilterValue = dateFilter.getValue();
+    private boolean areDatesEqual(LocalDateTime dateTime, DateTimePicker dateFilter) {
+        LocalDateTime dateFilterValue = dateFilter.getValue();
         if (dateFilterValue != null) {
-            LocalDate clientDate = LocalDate.parse(client.getDate());
-            return dateFilterValue.equals(clientDate);
+            return dateFilterValue.equals(dateTime);
         }
         return true;
     }

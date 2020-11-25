@@ -1,9 +1,10 @@
 server:
   port: 8080
-
-#logging.level.org.atmosphere = warn
-#spring.mustache.check-template-location = false
-
-# To improve the performance during development. 
-# For more information https://vaadin.com/docs/flow/spring/tutorial-spring-configuration.html#special-configuration-parameters
-# vaadin.whitelisted-packages= org/vaadin/example
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create
+  datasource:
+    url: "jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:taxi_db}"
+    username: ${DATABASE_USERNAME:adminapp}
+    password: ${DATABASE_PASSWORD:adminapp}

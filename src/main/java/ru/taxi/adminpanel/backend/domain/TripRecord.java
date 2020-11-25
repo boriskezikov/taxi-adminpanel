@@ -32,24 +32,20 @@ public class TripRecord {
     private BigInteger id;
 
     @Column(nullable = false)
-    private String from;
+    private String fromAddress;
 
     @Column(nullable = false)
-    private String to;
+    private String toAddress;
 
     @Column(nullable = false)
-    private LocalDateTime begin;
+    private LocalDateTime tripBeginTime;
 
     @Column(nullable = false)
-    private LocalDateTime end;
+    private LocalDateTime tripEndTime;
 
     @Column(nullable = false)
     private Double price;
 
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(
-            name = "UUID",
-            strategy = "org.hibernate.id.UUIDGenerator"
-    )
+    @Column(nullable = false)
     private UUID uuid;
 }
