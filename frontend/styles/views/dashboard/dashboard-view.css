@@ -1,0 +1,11 @@
+vaadin-grid-pro img {
+  border-radius: 50%;
+  flex-shrink: 0;
+  height: var(--lumo-size-m);
+  width: var(--lumo-size-m);
+  object-fit: cover;
+}
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
