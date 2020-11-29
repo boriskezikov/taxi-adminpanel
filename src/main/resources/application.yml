@@ -5,6 +5,6 @@ spring:
     hibernate:
       ddl-auto: create
   datasource:
-    url: "jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:taxi_db}"
-    username: ${DATABASE_USERNAME:adminapp}
-    password: ${DATABASE_PASSWORD:adminapp}
+    url: "jdbc:postgresql://${DATABASE_HOST:ec2-54-85-13-135.compute-1.amazonaws.com}:${DATABASE_PORT:5432}/${DATABASE_NAME:d1r2mbfguo9ovh}"
+    username: ${DATABASE_USERNAME:ahzyowifzdmqlg}
+    password: ${DATABASE_PASSWORD:c2e0694512cbb19009959367b41a91f4043459bd2a18037c187994486aa66084}
