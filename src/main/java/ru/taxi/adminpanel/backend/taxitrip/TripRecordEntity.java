@@ -1,4 +1,4 @@
-package ru.taxi.adminpanel.backend.domain;
+package ru.taxi.adminpanel.backend.taxitrip;
 
 
 import lombok.AllArgsConstructor;
@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -24,7 +24,7 @@ import java.util.UUID;
 @Entity(name = "records")
 @NoArgsConstructor
 @AllArgsConstructor
-public class TripRecord {
+public class TripRecordEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "records_ids_gen")
@@ -48,4 +48,7 @@ public class TripRecord {
 
     @Column(nullable = false)
     private UUID uuid;
+
+    @UpdateTimestamp
+    private LocalDateTime updated;
 }
