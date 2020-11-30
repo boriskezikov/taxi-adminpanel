@@ -85,11 +85,3 @@ compileJava {
             '-Amapstruct.defaultComponentModel=spring'
     ]
 }
-
-task stage(type: Copy, dependsOn: [clean, build]) {
-    from jar.archivePath
-    into project.rootDir
-    rename {
-        'app.jar'
-    }
-}
