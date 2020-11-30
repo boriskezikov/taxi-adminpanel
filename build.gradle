@@ -76,6 +76,7 @@ dependencies {
 task stage() {
     dependsOn clean, war
 }
+
 war.mustRunAfter clean
 
 task copyToLib(type: Copy) {
