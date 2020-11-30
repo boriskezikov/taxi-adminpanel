@@ -72,6 +72,12 @@ dependencies {
 
 
 }
+gradle.taskGraph.whenReady {
+    taskGraph ->
+        if (taskGraph.hasTask(stage)) {
+            test.enabled = false
+        }
+}
 
 task stage() {
     dependsOn clean, war
@@ -97,6 +103,7 @@ sourceCompatibility = '11'
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
+
 
 compileJava {
     options.compilerArgs = [
