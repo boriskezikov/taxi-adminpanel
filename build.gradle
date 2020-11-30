@@ -73,9 +73,9 @@ dependencies {
 
 }
 
-//task stage() {
-//    dependsOn clean, war
-//}
+task stage() {
+    dependsOn clean, war
+}
 
 war.mustRunAfter clean
 
