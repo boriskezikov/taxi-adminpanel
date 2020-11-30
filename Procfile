@@ -1,1 +1,1 @@
-web: java $JAVA_OPTS build/libs/*.war
+web: java -jar build/server/webapp-runner-*.jar build/libs/*.war
