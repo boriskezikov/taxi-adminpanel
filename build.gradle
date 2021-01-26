@@ -78,6 +78,10 @@ task stage() {
     dependsOn clean, war
 }
 
+war {
+    enabled = true
+}
+
 war.mustRunAfter clean
 
 task copyToLib(type: Copy) {
