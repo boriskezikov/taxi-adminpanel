@@ -1,5 +1,5 @@
-server:
-  port: ${PORT:33500}
+#server:
+#  port: 8080
 spring:
   jpa:
     hibernate:
