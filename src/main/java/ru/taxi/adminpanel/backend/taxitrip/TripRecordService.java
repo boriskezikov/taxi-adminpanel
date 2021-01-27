@@ -16,21 +16,21 @@ import java.util.List;
 public class TripRecordService {
 
     private final TripRecordRepository tripRecordRepository;
-    private final TripRecordMapper tripRecordMapper;
+//    private final TripRecordMapper tripRecordMapper;
 
     public void createRecord(TripRecordDTO tripRecordDTO) {
-        TripRecordEntity entity = tripRecordMapper.fromDto(tripRecordDTO);
-        tripRecordRepository.save(entity);
-        log.info("Added new record: {} ", entity.getId());
+//        TripRecordEntity entity = tripRecordMapper.fromDto(tripRecordDTO);
+//        tripRecordRepository.save(entity);
+//        log.info("Added new record: {} ", entity.getId());
     }
 
     public void updateRecord(TripRecordEntity source) {
-        tripRecordRepository.findById(source.getId())
-                .map(record -> {
-                    tripRecordMapper.update(source, record);
-                    return record; })
-                .map(tripRecordRepository::save);
-        log.info("Record updated: {} ", source.getId());
+//        tripRecordRepository.findById(source.getId())
+//                .map(record -> {
+//                    tripRecordMapper.update(source, record);
+//                    return record; })
+//                .map(tripRecordRepository::save);
+//        log.info("Record updated: {} ", source.getId());
     }
 
     public void delete(BigInteger id){
