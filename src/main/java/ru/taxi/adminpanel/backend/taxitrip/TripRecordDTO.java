@@ -16,6 +16,7 @@ public class TripRecordDTO {
 
     private String fromAddress;
 
+
     private String toAddress;
 
     private LocalDateTime tripBeginTime;
