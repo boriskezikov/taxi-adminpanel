@@ -31,7 +31,6 @@ public class TripRecordEntity {
     @SequenceGenerator(name = "records_ids_gen", sequenceName = "records_id_seq", allocationSize = 1)
     private BigInteger id;
 
-
     @Column(nullable = false)
     private String fromAddress;
 
