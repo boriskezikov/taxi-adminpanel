@@ -7,4 +7,5 @@ import java.math.BigInteger;
 
 @Repository
 public interface TripRecordRepository extends CrudRepository<TripRecordEntity, BigInteger> {
+
 }
