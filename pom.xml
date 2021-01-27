@@ -324,8 +324,8 @@
                     </plugin>
                     <plugin>
                         <groupId>com.vaadin</groupId>
-                        <artifactId>vaadin-maven-plugin</artifactId>
-                        <version>18.0.5</version>
+                        <artifactId>flow-maven-plugin</artifactId>
+<!--                        <version>18.0.5</version>-->
                         <executions>
                             <execution>
                                 <goals>
