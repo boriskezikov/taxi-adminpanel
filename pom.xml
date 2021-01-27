@@ -6,7 +6,7 @@
     <groupId>ru.taxi</groupId>
     <artifactId>adminpanel</artifactId>
     <version>1.0.0</version>
-    <packaging>jar</packaging>
+    <packaging>war</packaging>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -106,12 +106,6 @@
             <version>1.27</version>
             <scope>compile</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>com.github.jsimone</groupId>-->
-<!--            <artifactId>webapp-runner</artifactId>-->
-<!--            <version>8.5.11.3</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin</artifactId>
