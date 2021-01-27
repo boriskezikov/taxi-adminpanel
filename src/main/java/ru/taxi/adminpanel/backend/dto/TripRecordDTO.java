@@ -1,4 +1,4 @@
-package ru.taxi.adminpanel.backend.taxitrip;
+package ru.taxi.adminpanel.backend.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @AllArgsConstructor
@@ -14,9 +15,9 @@ import java.time.LocalDateTime;
 @Builder
 public class TripRecordDTO {
 
-    private String fromAddress;
+    private UUID fromAddress;
 
-    private String toAddress;
+    private UUID toAddress;
 
     private LocalDateTime tripBeginTime;
 

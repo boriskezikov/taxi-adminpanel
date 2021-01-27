@@ -1,14 +1,22 @@
-package ru.taxi.adminpanel.backend.taxitrip;
+package ru.taxi.adminpanel.backend.service;
 
 import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeasy.random.EasyRandom;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import ru.taxi.adminpanel.backend.domain.AddressEntity;
+import ru.taxi.adminpanel.backend.domain.TripRecordEntity;
+import ru.taxi.adminpanel.backend.dto.TripRecordDTO;
+import ru.taxi.adminpanel.backend.repository.AddressRepository;
+import ru.taxi.adminpanel.backend.repository.TripRecordRepository;
 
 import javax.annotation.PostConstruct;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -16,10 +24,11 @@ import java.util.List;
 public class TripRecordService {
 
     private final TripRecordRepository tripRecordRepository;
-    private final TripRecordMapper tripRecordMapper;
+    private final ModelMapper mapper;
 
     public void createRecord(TripRecordDTO tripRecordDTO) {
-        TripRecordEntity entity = tripRecordMapper.fromDto(tripRecordDTO);
+        TripRecordEntity entity = mapper.map(tripRecordDTO, TripRecordEntity.class);
+        entity.setUuid(UUID.randomUUID());
         tripRecordRepository.save(entity);
         log.info("Added new record: {} ", entity.getId());
     }
@@ -27,8 +36,9 @@ public class TripRecordService {
     public void updateRecord(TripRecordEntity source) {
         tripRecordRepository.findById(source.getId())
                 .map(record -> {
-                    tripRecordMapper.update(source, record);
-                    return record; })
+                    mapper.map(source, record);
+                    return record;
+                })
                 .map(tripRecordRepository::save);
         log.info("Record updated: {} ", source.getId());
     }
@@ -39,16 +49,7 @@ public class TripRecordService {
     }
 
     public List<TripRecordEntity> findAll() {
-        return (List<TripRecordEntity>) tripRecordRepository.findAll();
+        return  tripRecordRepository.findAll();
     }
 
-    @PostConstruct
-    public void initTestData() {
-        EasyRandom gen = new EasyRandom();
-        Faker faker =new Faker();
-        gen.objects(TripRecordDTO.class, 3).peek(record->{
-            record.setFromAddress(faker.address().fullAddress());
-            record.setToAddress(faker.address().fullAddress());
-        }).forEach(this::createRecord);
-    }
 }
