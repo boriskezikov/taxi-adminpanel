@@ -13,9 +13,8 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-<!--        <vaadin.version>14.4.6</vaadin.version>-->
+        <!--        <vaadin.version>14.4.6</vaadin.version>-->
     </properties>
-
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -109,12 +108,12 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin</artifactId>
-<!--            <version>18.0.5</version>-->
+            <!--            <version>18.0.5</version>-->
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-spring-boot-starter</artifactId>
-<!--            <version>18.0.5</version>-->
+            <!--            <version>18.0.5</version>-->
             <exclusions>
                 <!-- Webjars are only needed when running in Vaadin 13 compatibility mode -->
                 <exclusion>
@@ -158,22 +157,8 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
             <version>2.3.2.RELEASE</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-devtools</artifactId>-->
-<!--            <version>2.3.2.RELEASE</version>-->
-<!--        </dependency>-->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct</artifactId>
-            <version>1.4.1.Final</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.mapstruct/mapstruct-processor -->
-        <dependency>
-            <groupId>org.mapstruct</groupId>
-            <artifactId>mapstruct-processor</artifactId>
-            <version>1.4.1.Final</version>
-        </dependency>
+
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
@@ -184,12 +169,6 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.16</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok-maven-plugin -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok-maven-plugin</artifactId>
-            <version>1.18.16.0</version>
         </dependency>
 
         <dependency>
@@ -223,11 +202,6 @@
             <version>17.0.10</version>
         </dependency>
         <dependency>
-            <groupId>io.github.bonigarcia</groupId>
-            <artifactId>webdrivermanager</artifactId>
-            <version>3.8.1</version>
-        </dependency>
-        <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server-production-mode</artifactId>
         </dependency>
@@ -237,29 +211,43 @@
             <artifactId>postgresql</artifactId>
             <version>42.2.18</version>
         </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>io.github.bonigarcia</groupId>-->
+        <!--            <artifactId>webdrivermanager</artifactId>-->
+        <!--            <version>3.8.1</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.projectlombok</groupId>-->
+        <!--            <artifactId>lombok-maven-plugin</artifactId>-->
+        <!--            <version>1.18.16.0</version>-->
+        <!--        </dependency>-->
+        <!--                <dependency>-->
+        <!--                    <groupId>org.mapstruct</groupId>-->
+        <!--                    <artifactId>mapstruct-processor</artifactId>-->
+        <!--                    <version>1.4.1.Final</version>-->
+        <!--                </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.mapstruct</groupId>-->
+        <!--            <artifactId>mapstruct</artifactId>-->
+        <!--            <version>1.4.1.Final</version>-->
+        <!--        </dependency>-->
+
+        <dependency>
+            <groupId>org.modelmapper</groupId>
+            <artifactId>modelmapper</artifactId>
+            <version>2.3.9</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>
-        <defaultGoal>spring-boot:run</defaultGoal>
+        <!--        <defaultGoal>spring-boot:run</defaultGoal>-->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5.1</version>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>1.18.16</version>
-                        </path>
-                        <path>
-                            <groupId>org.mapstruct</groupId>
-                            <artifactId>mapstruct-processor</artifactId>
-                            <version>1.4.1.Final</version>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
+                <version>3.8.1</version>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -298,27 +286,28 @@
             <properties>
                 <vaadin.productionMode>true</vaadin.productionMode>
             </properties>
-
             <dependencies>
                 <dependency>
                     <groupId>com.vaadin</groupId>
                     <artifactId>flow-server-production-mode</artifactId>
                 </dependency>
             </dependencies>
-
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
                         <configuration>
-                            <jvmArguments>-Dvaadin.productionMode</jvmArguments>
+                            <jvmArguments>
+                                -Dvaadin.productionMode
+                                -Dvaadin.proKey=boris200898@icloud.com/pro-67870f40-7877-40a8-bf60-6acf34503d9d
+                            </jvmArguments>
                         </configuration>
                     </plugin>
                     <plugin>
                         <groupId>com.vaadin</groupId>
                         <artifactId>flow-maven-plugin</artifactId>
-<!--                        <version>18.0.5</version>-->
+                        <!--                        <version>18.0.5</version>-->
                         <executions>
                             <execution>
                                 <goals>
@@ -339,7 +328,7 @@
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
-<!--                        <version>2.3.3.RELEASE</version>-->
+                        <!--                        <version>2.3.3.RELEASE</version>-->
                         <executions>
                             <execution>
                                 <id>start-spring-boot</id>

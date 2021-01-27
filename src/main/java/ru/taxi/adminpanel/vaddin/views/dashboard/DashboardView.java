@@ -1,12 +1,8 @@
 package ru.taxi.adminpanel.vaddin.views.dashboard;
 
-import com.vaadin.flow.component.AbstractField;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -14,12 +10,10 @@ import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.gridpro.GridPro;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
-import com.vaadin.flow.data.selection.SelectionListener;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -27,12 +21,11 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import org.apache.commons.lang3.StringUtils;
-import ru.taxi.adminpanel.backend.taxitrip.TripRecordEntity;
-import ru.taxi.adminpanel.backend.taxitrip.TripRecordService;
+import ru.taxi.adminpanel.backend.domain.TripRecordEntity;
+import ru.taxi.adminpanel.backend.service.TripRecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
 import java.text.NumberFormat;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -79,7 +72,9 @@ public class DashboardView extends Div {
         grid.setHeight("100%");
         dataProvider = new ListDataProvider<>(tripRecordService.findAll());
         grid.setDataProvider(dataProvider);
-        grid.addSelectionListener((SelectionListener<Grid<TripRecordEntity>, TripRecordEntity>) selectionEvent -> Notification.show("Selected row: " + grid.getSelectedItems()));
+//        grid.addSelectionListener((SelectionListener<Grid<TripRecordEntity>, TripRecordEntity>) selectionEvent -> {
+//            Notification.show("Selected row: " + grid.getSelectedItems());
+//        });
     }
 
     private void addColumnsToGrid() {
@@ -96,20 +91,15 @@ public class DashboardView extends Div {
     }
 
     private void createFromColumn() {
-        fromColumn = grid.addEditColumn(TripRecordEntity::getFromAddress)
-                .text((item, newValue) -> {
-                    item.setFromAddress(newValue);
-                    tripRecordService.updateRecord(item);
-                })
-                .setComparator(TripRecordEntity::getFromAddress).setHeader("From address");
+        fromColumn = grid.addColumn(TripRecordEntity::getFromAddressEntity).setHeader("From address")
+                .setFlexGrow(1)
+                .setAutoWidth(true);
     }
 
     private void createToColumn() {
-        toColumn = grid.addEditColumn(TripRecordEntity::getToAddress).text((item, newValue) -> {
-            item.setToAddress(newValue);
-            tripRecordService.updateRecord(item);
-        })
-                .setComparator(TripRecordEntity::getToAddress).setHeader("To address");
+        toColumn = grid.addColumn(TripRecordEntity::getToAddressEntity).setHeader("To address")
+                .setFlexGrow(1)
+                .setAutoWidth(true);
     }
 
     private void createPriceColumn() {
@@ -119,8 +109,10 @@ public class DashboardView extends Div {
                 .text((item, newValue) -> {
                     item.setPrice(Double.parseDouble(newValue));
                     tripRecordService.updateRecord(item);
+                    Notification.show("Trip price has been updated");
                 })
-                .setComparator(TripRecordEntity::getPrice).setHeader("Trip price");
+                .setComparator(TripRecordEntity::getPrice).setHeader("Trip price")
+                .setAutoWidth(true);
 
     }
 
@@ -128,14 +120,16 @@ public class DashboardView extends Div {
         beginColumn = grid
                 .addColumn(new LocalDateTimeRenderer<>(TripRecordEntity::getTripBeginTime,
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
-                .setComparator(TripRecordEntity::getTripBeginTime).setHeader("Begin time");
+                .setComparator(TripRecordEntity::getTripBeginTime).setHeader("Begin time")
+                .setAutoWidth(true);
     }
 
     private void createEndColumn() {
         endColumn = grid
                 .addColumn(new LocalDateTimeRenderer<>(TripRecordEntity::getTripEndTime,
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
-                .setComparator(TripRecordEntity::getTripEndTime).setHeader("End time");
+                .setComparator(TripRecordEntity::getTripEndTime).setHeader("End time")
+                .setAutoWidth(true);
     }
 
 
@@ -176,7 +170,6 @@ public class DashboardView extends Div {
         filterRow.getCell(endColumn).setComponent(dateEndFilter);
     }
 
-
     private boolean areDatesEqual(LocalDateTime dateTime, DateTimePicker dateFilter) {
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         LocalDateTime dateFilterValue = dateFilter.getValue();
@@ -185,4 +178,5 @@ public class DashboardView extends Div {
         }
         return true;
     }
+
 };
