@@ -250,7 +250,6 @@
                     <artifactId>flow-server-production-mode</artifactId>
                 </dependency>
             </dependencies>
-
             <build>
                 <plugins>
                     <plugin>
@@ -282,12 +281,12 @@
                             <processTypes>
                                 <web>java $JAVA_OPTS -jar target/*.jar --server.port=$PORT</web>
                             </processTypes>
+                            <logProgress>true</logProgress>
                         </configuration>
                     </plugin>
                 </plugins>
             </build>
         </profile>
-
         <profile>
             <id>integration-tests</id>
             <build>
