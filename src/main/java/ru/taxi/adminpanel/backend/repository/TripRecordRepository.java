@@ -1,7 +1,6 @@
 package ru.taxi.adminpanel.backend.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import ru.taxi.adminpanel.backend.domain.TripRecordEntity;
 
