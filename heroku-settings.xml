@@ -8,7 +8,7 @@
      -->
 
     <activeProfiles>
-<!--        <activeProfile>production</activeProfile>-->
+        <activeProfile>production</activeProfile>
         <activeProfile>npm</activeProfile>
     </activeProfiles>
 </settings>

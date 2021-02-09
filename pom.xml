@@ -210,34 +210,11 @@
             <artifactId>postgresql</artifactId>
             <version>42.2.18</version>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>io.github.bonigarcia</groupId>-->
-        <!--            <artifactId>webdrivermanager</artifactId>-->
-        <!--            <version>3.8.1</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.projectlombok</groupId>-->
-        <!--            <artifactId>lombok-maven-plugin</artifactId>-->
-        <!--            <version>1.18.16.0</version>-->
-        <!--        </dependency>-->
-        <!--                <dependency>-->
-        <!--                    <groupId>org.mapstruct</groupId>-->
-        <!--                    <artifactId>mapstruct-processor</artifactId>-->
-        <!--                    <version>1.4.1.Final</version>-->
-        <!--                </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.mapstruct</groupId>-->
-        <!--            <artifactId>mapstruct</artifactId>-->
-        <!--            <version>1.4.1.Final</version>-->
-        <!--        </dependency>-->
-
         <dependency>
             <groupId>org.modelmapper</groupId>
             <artifactId>modelmapper</artifactId>
             <version>2.3.9</version>
         </dependency>
-
-
     </dependencies>
 
     <build>
@@ -320,50 +297,50 @@
             </build>
         </profile>
 
-        <profile>
-            <id>it</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-maven-plugin</artifactId>
-                        <!--                        <version>2.3.3.RELEASE</version>-->
-                        <executions>
-                            <execution>
-                                <id>start-spring-boot</id>
-                                <phase>pre-integration-test</phase>
-                                <goals>
-                                    <goal>start</goal>
-                                </goals>
-                            </execution>
-                            <execution>
-                                <id>stop-spring-boot</id>
-                                <phase>post-integration-test</phase>
-                                <goals>
-                                    <goal>stop</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-failsafe-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <goals>
-                                    <goal>integration-test</goal>
-                                    <goal>verify</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <trimStackTrace>false</trimStackTrace>
-                            <enableAssertions>true</enableAssertions>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
+<!--        <profile>-->
+<!--            <id>it</id>-->
+<!--            <build>-->
+<!--                <plugins>-->
+<!--                    <plugin>-->
+<!--                        <groupId>org.springframework.boot</groupId>-->
+<!--                        <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--                        &lt;!&ndash;                        <version>2.3.3.RELEASE</version>&ndash;&gt;-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <id>start-spring-boot</id>-->
+<!--                                <phase>pre-integration-test</phase>-->
+<!--                                <goals>-->
+<!--                                    <goal>start</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                            <execution>-->
+<!--                                <id>stop-spring-boot</id>-->
+<!--                                <phase>post-integration-test</phase>-->
+<!--                                <goals>-->
+<!--                                    <goal>stop</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                    </plugin>-->
+<!--                    <plugin>-->
+<!--                        <groupId>org.apache.maven.plugins</groupId>-->
+<!--                        <artifactId>maven-failsafe-plugin</artifactId>-->
+<!--                        <executions>-->
+<!--                            <execution>-->
+<!--                                <goals>-->
+<!--                                    <goal>integration-test</goal>-->
+<!--                                    <goal>verify</goal>-->
+<!--                                </goals>-->
+<!--                            </execution>-->
+<!--                        </executions>-->
+<!--                        <configuration>-->
+<!--                            <trimStackTrace>false</trimStackTrace>-->
+<!--                            <enableAssertions>true</enableAssertions>-->
+<!--                        </configuration>-->
+<!--                    </plugin>-->
+<!--                </plugins>-->
+<!--            </build>-->
+<!--        </profile>-->
         <profile>
             <id>npm</id>
             <build>
@@ -373,9 +350,10 @@
                         <artifactId>frontend-maven-plugin</artifactId>
                         <!-- Use the latest released version:
                         https://repo1.maven.org/maven2/com/github/eirslett/frontend-maven-plugin/ -->
-                        <version>1.11.0</version>
+                        <version>1.9.1</version>
                         <executions>
                             <execution>
+                                <!-- optional: you don't really need execution ids, but it looks nice in your build log. -->
                                 <id>install node and npm</id>
                                 <goals>
                                     <goal>install-node-and-npm</goal>
