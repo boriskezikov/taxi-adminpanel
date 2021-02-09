@@ -24,8 +24,8 @@ public class FakeDataGenerator {
     private final TripRecordRepository tripRecordRepository;
     private final AddressRepository addressRepository;
 
-    private static final int ADDRESSES_COUNT = 10;
-    private static final int TRIPS_COUNT = 10;
+    private static final int ADDRESSES_COUNT = 200;
+    private static final int TRIPS_COUNT = 200;
 
     @PostConstruct
     public void initTestData() {
