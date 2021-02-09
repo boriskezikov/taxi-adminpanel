@@ -1,5 +1,5 @@
 server:
-  port: ${port:33500}
+  port: ${PORT:8080}
 spring:
   jpa:
     hibernate:
@@ -9,3 +9,8 @@ spring:
     username: ${DATABASE_USERNAME:ahzyowifzdmqlg}
     password: ${DATABASE_PASSWORD:c2e0694512cbb19009959367b41a91f4043459bd2a18037c187994486aa66084}
     driver-class-name: org.postgresql.Driver
+vaadin:
+  compatibilityMode: false
+logging:
+  level:
+    org.atmosphere: warn
