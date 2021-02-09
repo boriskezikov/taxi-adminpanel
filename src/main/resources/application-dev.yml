@@ -8,3 +8,8 @@ spring:
     url: "jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:taxi_db}"
     username: ${DATABASE_USERNAME:adminapp}
     password: ${DATABASE_PASSWORD:adminapp}
+vaadin:
+  compatibilityMode: false
+logging:
+  level:
+    org.atmosphere: warn
