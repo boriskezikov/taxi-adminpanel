@@ -172,17 +172,36 @@ public class DashboardView extends Div {
                 .containsIgnoreCase(Double.toString(trip.getPrice()), priceFilter.getValue())));
         filterRow.getCell(priceColumn).setComponent(priceFilter);
 
-        Stream.of(endColumn, beginColumn, toColumn, fromColumn, uuidColumn).forEach(col -> {
-            var blocked = new TextField();
-            blocked.setPlaceholder("Filter");
-            blocked.setClearButtonVisible(false);
-            blocked.setWidth("100%");
-            blocked.setEnabled(false);
-            blocked.setValueChangeMode(ValueChangeMode.EAGER);
-            filterRow.getCell(col).setComponent(blocked);
+        Stream.of(endColumn, beginColumn).forEach(col -> {
+            var filter = getDefaultFilter();
+            filter.setEnabled(false);
+            filterRow.getCell(col).setComponent(filter);
         });
 
+        var toFilter = getDefaultFilter();
+        toFilter.addValueChangeListener(event -> dataProvider.addFilter(trip ->
+                StringUtils.containsIgnoreCase(trip.getToAddressEntity().toString(), toFilter.getValue())));
+        filterRow.getCell(toColumn).setComponent(toFilter);
 
+        var fromFilter = getDefaultFilter();
+        fromFilter.addValueChangeListener(event -> dataProvider.addFilter(trip ->
+                StringUtils.containsIgnoreCase(trip.getFromAddressEntity().toString(), fromFilter.getValue())));
+        filterRow.getCell(fromColumn).setComponent(fromFilter);
+
+        var uuidFilter = getDefaultFilter();
+        uuidFilter.addValueChangeListener(event -> dataProvider.addFilter(trip ->
+                StringUtils.containsIgnoreCase(trip.getUuid().toString(), uuidFilter.getValue())));
+        filterRow.getCell(uuidColumn).setComponent(uuidFilter);
+    }
+
+
+    private TextField getDefaultFilter() {
+        var filter = new TextField();
+        filter.setPlaceholder("Filter");
+        filter.setClearButtonVisible(true);
+        filter.setWidth("100%");
+        filter.setValueChangeMode(ValueChangeMode.EAGER);
+        return filter;
     }
 
 };
