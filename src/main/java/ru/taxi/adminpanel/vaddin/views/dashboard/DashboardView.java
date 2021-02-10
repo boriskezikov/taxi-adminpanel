@@ -19,6 +19,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import ru.taxi.adminpanel.backend.domain.TripRecordEntity;
 import ru.taxi.adminpanel.backend.service.TripRecordService;
@@ -29,6 +30,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.stream.Stream;
 
+@Slf4j
 @Route(value = "admin-panel", layout = MainView.class)
 @SpringComponent
 @UIScope
@@ -66,8 +68,8 @@ public class DashboardView extends Div {
 
     private void createGridComponent() {
         grid = new GridPro<>();
-        grid.setSelectionMode(SelectionMode.SINGLE);
-        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.LUMO_COLUMN_BORDERS);
+        grid.setSelectionMode(SelectionMode.MULTI);
+        grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.MATERIAL_COLUMN_DIVIDERS);
         grid.setHeight("100%");
         dataProvider = new ListDataProvider<>(tripRecordService.findAll());
         grid.setDataProvider(dataProvider);
@@ -80,25 +82,41 @@ public class DashboardView extends Div {
         createToColumn();
         createBeginColumn();
         createEndColumn();
+        createUuidColumn();
     }
 
     private void createIdColumn() {
         idColumn = grid.addColumn(TripRecordEntity::getId, "id").setHeader("ID");
     }
 
+    private void createUuidColumn() {
+        String header = "UUID";
+        uuidColumn = grid.addColumn(TripRecordEntity::getUuid)
+                .setHeader(header)
+                .setAutoWidth(true)
+                .setFlexGrow(1)
+                .setSortable(false);
+        log.debug("{} column created", header);
+    }
+
     private void createFromColumn() {
-        fromColumn = grid.addColumn(TripRecordEntity::getFromAddressEntity).setHeader("From address")
+        String header = "From address";
+        fromColumn = grid.addColumn(TripRecordEntity::getFromAddressEntity).setHeader(header)
                 .setFlexGrow(1)
                 .setAutoWidth(true);
+        log.debug("{} column created", header);
     }
 
     private void createToColumn() {
-        toColumn = grid.addColumn(TripRecordEntity::getToAddressEntity).setHeader("To address")
+        String header = "To address";
+        toColumn = grid.addColumn(TripRecordEntity::getToAddressEntity).setHeader(header)
                 .setFlexGrow(1)
                 .setAutoWidth(true);
+        log.debug("{} column created", header);
     }
 
     private void createPriceColumn() {
+        String header = "Trip price";
         priceColumn = grid
                 .addEditColumn(TripRecordEntity::getPrice,
                         new NumberRenderer<>(TripRecordEntity::getPrice, NumberFormat.getCurrencyInstance(Locale.US), "-"))
@@ -107,25 +125,29 @@ public class DashboardView extends Div {
                     tripRecordService.updateRecord(item);
                     Notification.show("Trip price has been updated");
                 })
-                .setComparator(TripRecordEntity::getPrice).setHeader("Trip price")
+                .setComparator(TripRecordEntity::getPrice).setHeader(header)
                 .setAutoWidth(true);
-
+        log.debug("{} column created", header);
     }
 
     private void createBeginColumn() {
+        String header = "Begin time";
         beginColumn = grid
                 .addColumn(new LocalDateTimeRenderer<>(TripRecordEntity::getTripBeginTime,
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
-                .setComparator(TripRecordEntity::getTripBeginTime).setHeader("Begin time")
+                .setComparator(TripRecordEntity::getTripBeginTime).setHeader(header)
                 .setAutoWidth(true);
+        log.debug("{} column created", header);
     }
 
     private void createEndColumn() {
+        String header = "End time";
         endColumn = grid
                 .addColumn(new LocalDateTimeRenderer<>(TripRecordEntity::getTripEndTime,
                         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")))
-                .setComparator(TripRecordEntity::getTripEndTime).setHeader("End time")
+                .setComparator(TripRecordEntity::getTripEndTime).setHeader(header)
                 .setAutoWidth(true);
+        log.debug("{} column created", header);
     }
 
 
@@ -150,7 +172,7 @@ public class DashboardView extends Div {
                 .containsIgnoreCase(Double.toString(trip.getPrice()), priceFilter.getValue())));
         filterRow.getCell(priceColumn).setComponent(priceFilter);
 
-        Stream.of(endColumn, beginColumn, toColumn, fromColumn).forEach(col->{
+        Stream.of(endColumn, beginColumn, toColumn, fromColumn, uuidColumn).forEach(col -> {
             var blocked = new TextField();
             blocked.setPlaceholder("Filter");
             blocked.setClearButtonVisible(false);

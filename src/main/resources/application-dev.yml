@@ -13,6 +13,9 @@ vaadin:
 logging:
   level:
     org.atmosphere: warn
+    spring.boot: debug
+    ru.taxi.adminpanel: debug
+    vaadin: debug
 
 generator:
   trips: ${TRIPS_COUNT:10}
