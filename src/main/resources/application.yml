@@ -14,3 +14,6 @@ vaadin:
 logging:
   level:
     org.atmosphere: warn
+generator:
+  trips: ${TRIPS_COUNT:10}
+  addr: ${ADDRESSES_COUNT:10}

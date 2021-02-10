@@ -1,6 +1,5 @@
 package ru.taxi.adminpanel.vaddin.views.dashboard;
 
-import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.grid.Grid;
@@ -26,9 +25,9 @@ import ru.taxi.adminpanel.backend.service.TripRecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
 import java.text.NumberFormat;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
+import java.util.stream.Stream;
 
 @Route(value = "admin-panel", layout = MainView.class)
 @SpringComponent
@@ -72,9 +71,6 @@ public class DashboardView extends Div {
         grid.setHeight("100%");
         dataProvider = new ListDataProvider<>(tripRecordService.findAll());
         grid.setDataProvider(dataProvider);
-//        grid.addSelectionListener((SelectionListener<Grid<TripRecordEntity>, TripRecordEntity>) selectionEvent -> {
-//            Notification.show("Selected row: " + grid.getSelectedItems());
-//        });
     }
 
     private void addColumnsToGrid() {
@@ -154,29 +150,17 @@ public class DashboardView extends Div {
                 .containsIgnoreCase(Double.toString(trip.getPrice()), priceFilter.getValue())));
         filterRow.getCell(priceColumn).setComponent(priceFilter);
 
+        Stream.of(endColumn, beginColumn, toColumn, fromColumn).forEach(col->{
+            var blocked = new TextField();
+            blocked.setPlaceholder("Filter");
+            blocked.setClearButtonVisible(false);
+            blocked.setWidth("100%");
+            blocked.setEnabled(false);
+            blocked.setValueChangeMode(ValueChangeMode.EAGER);
+            filterRow.getCell(col).setComponent(blocked);
+        });
 
-        DateTimePicker dateBeginFilter = new DateTimePicker();
-        dateBeginFilter.setDatePlaceholder("Date Filter");
-        dateBeginFilter.setTimePlaceholder("Time Filter");
-        dateBeginFilter.setWidth("100%");
-        dateBeginFilter.addValueChangeListener(event -> dataProvider.addFilter(trip -> areDatesEqual(trip.getTripBeginTime(), dateBeginFilter)));
-        filterRow.getCell(beginColumn).setComponent(dateBeginFilter);
 
-        DateTimePicker dateEndFilter = new DateTimePicker();
-        dateEndFilter.setDatePlaceholder("Date Filter");
-        dateEndFilter.setTimePlaceholder("Time Filter");
-        dateEndFilter.setWidth("100%");
-        dateEndFilter.addValueChangeListener(event -> dataProvider.addFilter(trip -> areDatesEqual(trip.getTripEndTime(), dateEndFilter)));
-        filterRow.getCell(endColumn).setComponent(dateEndFilter);
-    }
-
-    private boolean areDatesEqual(LocalDateTime dateTime, DateTimePicker dateFilter) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        LocalDateTime dateFilterValue = dateFilter.getValue();
-        if (dateFilterValue != null) {
-            return dateFilterValue.equals(LocalDateTime.parse(dateTimeFormatter.format(dateTime)));
-        }
-        return true;
     }
 
 };

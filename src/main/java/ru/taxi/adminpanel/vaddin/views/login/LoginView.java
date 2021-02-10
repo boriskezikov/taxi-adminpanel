@@ -22,6 +22,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         setJustifyContentMode(JustifyContentMode.CENTER);
 
         login.setAction("login");
+
         add(new H1("Adminpanel"), login);
     }
 

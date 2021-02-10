@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jeasy.random.EasyRandom;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.taxi.adminpanel.backend.domain.AddressEntity;
 import ru.taxi.adminpanel.backend.domain.TripRecordEntity;
@@ -24,8 +25,11 @@ public class FakeDataGenerator {
     private final TripRecordRepository tripRecordRepository;
     private final AddressRepository addressRepository;
 
-    private static final int ADDRESSES_COUNT = 10;
-    private static final int TRIPS_COUNT = 10;
+    @Value("${generator.addr}")
+    private int ADDRESSES_COUNT;
+
+    @Value("${generator.trips}")
+    private int TRIPS_COUNT;
 
     @PostConstruct
     public void initTestData() {

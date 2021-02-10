@@ -16,8 +16,8 @@ import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.VaadinService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import ru.taxi.adminpanel.vaddin.views.about.AboutView;
 import ru.taxi.adminpanel.vaddin.views.dashboard.DashboardView;
 
@@ -50,12 +50,8 @@ public class MainView extends AppLayout {
         layout.add(new Image("images/user.svg", "Avatar"));
         Anchor logout = new Anchor("/logout", "Log out");
         logout.getElement().addEventListener("click", (event) -> {
-            if (getUI().isPresent()) {
-                getUI().get().getSession().close();
-            } else {
-                VaadinService.getCurrentRequest().getWrappedSession().invalidate();
-            }
-            log.info("Session closed");
+            SecurityContextHolder.clearContext();
+            log.info("Context cleared");
         });
         layout.add(logout);
         return layout;
@@ -71,7 +67,6 @@ public class MainView extends AppLayout {
         HorizontalLayout logoLayout = new HorizontalLayout();
         logoLayout.setId("logo");
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        logoLayout.add(new Image("images/logo.png", "Adminpanel logo"));
         logoLayout.add(new H1("Adminpanel"));
         layout.add(logoLayout, menu);
         return layout;
