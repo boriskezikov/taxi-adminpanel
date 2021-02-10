@@ -5,7 +5,6 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
@@ -16,17 +15,16 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.VaadinService;
+import lombok.extern.slf4j.Slf4j;
 import ru.taxi.adminpanel.vaddin.views.about.AboutView;
 import ru.taxi.adminpanel.vaddin.views.dashboard.DashboardView;
 
 import java.util.Optional;
 
 
-//@Route(value = "main-view")
-@JsModule("./styles/shared-styles.js")
+@Slf4j
 @CssImport("./styles/views/main/main-view.css")
 public class MainView extends AppLayout {
 
@@ -50,6 +48,16 @@ public class MainView extends AppLayout {
         viewTitle = new H1();
         layout.add(viewTitle);
         layout.add(new Image("images/user.svg", "Avatar"));
+        Anchor logout = new Anchor("/logout", "Log out");
+        logout.getElement().addEventListener("click", (event) -> {
+            if (getUI().isPresent()) {
+                getUI().get().getSession().close();
+            } else {
+                VaadinService.getCurrentRequest().getWrappedSession().invalidate();
+            }
+            log.info("Session closed");
+        });
+        layout.add(logout);
         return layout;
     }
 
