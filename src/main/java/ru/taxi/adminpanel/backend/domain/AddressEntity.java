@@ -45,18 +45,23 @@ public class AddressEntity {
     @Column(nullable = false)
     private String street;
 
+    @Column(nullable = false)
+    private String streetNumber;
+
     @Column
     private String zipCode;
 
+    private String formattedAddress;
+
+    @Column(nullable = false)
+    private String lng;
+
+    @Column(nullable = false)
+    private String lat;
+
     @Override
     public String toString() {
-        return country + "," + city + "," + street + "," + zipCode;
+        return country + "," + city + "," + street + "," + streetNumber + "," + zipCode;
     }
-
-    @Column(nullable = false)
-    private String longitude;
-
-    @Column(nullable = false)
-    private String latitude;
 
 }

@@ -36,11 +36,11 @@ public class TripRecordEntity {
     private BigInteger id;
 
     @JoinColumn(name = "address_from_id", nullable = false)
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private AddressEntity fromAddressEntity;
 
     @JoinColumn(name = "address_to_id", nullable = false)
-    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
     private AddressEntity toAddressEntity;
 
     @Column(nullable = false)
@@ -52,8 +52,9 @@ public class TripRecordEntity {
     @Column(nullable = false)
     private Double price;
 
+    @Builder.Default
     @Column(nullable = false)
-    private UUID uuid;
+    private UUID uuid = UUID.randomUUID();
 
     @UpdateTimestamp
     private LocalDateTime updated;

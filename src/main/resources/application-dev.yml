@@ -3,7 +3,7 @@ server:
 spring:
   jpa:
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
   datasource:
     url: "jdbc:postgresql://${DATABASE_HOST:localhost}:${DATABASE_PORT:5432}/${DATABASE_NAME:taxi_db}"
     username: ${DATABASE_USERNAME:adminapp}
@@ -20,3 +20,9 @@ logging:
 generator:
   trips: ${TRIPS_COUNT:10}
   addr: ${ADDRESSES_COUNT:10}
+google-api:
+  key: AIzaSyB8V8hR1JKIG9L8ojccE5cOfMD4hS3seoA
+  response:
+    lang: ru
+    sensor: false
+
