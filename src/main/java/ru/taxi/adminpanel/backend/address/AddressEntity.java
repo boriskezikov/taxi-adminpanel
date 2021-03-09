@@ -1,5 +1,6 @@
-package ru.taxi.adminpanel.backend.domain;
+package ru.taxi.adminpanel.backend.address;
 
+import com.google.maps.model.LatLng;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -62,6 +63,11 @@ public class AddressEntity {
     @Override
     public String toString() {
         return country + "," + city + "," + street + "," + streetNumber + "," + zipCode;
+    }
+
+
+    public LatLng getGeometry() {
+        return new LatLng(Double.parseDouble(this.lat), Double.parseDouble(this.lng));
     }
 
 }

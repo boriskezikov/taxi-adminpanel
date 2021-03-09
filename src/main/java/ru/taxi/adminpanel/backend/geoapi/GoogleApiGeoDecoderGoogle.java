@@ -6,7 +6,7 @@ import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.taxi.adminpanel.backend.domain.AddressEntity;
+import ru.taxi.adminpanel.backend.address.AddressEntity;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -17,7 +17,7 @@ import static com.google.maps.model.AddressType.STREET_ADDRESS;
 
 @Service
 @RequiredArgsConstructor
-public class GoogleApiGeoDecoder extends BasicGeoConfigurator {
+public class GoogleApiGeoDecoderGoogle extends GoogleBasicGeoConfigurator {
 
     public List<AddressEntity> decode(LatLng latLng, String lang) {
         try {
@@ -27,9 +27,9 @@ public class GoogleApiGeoDecoder extends BasicGeoConfigurator {
                     .language(lang)
                     .resultType(STREET_ADDRESS)
                     .await());
-            return geocodingResults.stream().map(GoogleApiMapper::retrieveAddressEntity).collect(Collectors.toList());
+            return geocodingResults.stream().map(GoogleApiRetriever::retrieveAddressEntity).collect(Collectors.toList());
         } catch (ApiException | InterruptedException | IOException e) {
-            throw new ExternalApiException("Error:", e);
+            throw new GoogleApiException("Error:", e);
         } finally {
             geoApiContext.shutdown();
         }

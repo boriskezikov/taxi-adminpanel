@@ -4,8 +4,7 @@ import com.google.maps.model.AddressComponent;
 import com.google.maps.model.AddressComponentType;
 import com.google.maps.model.GeocodingResult;
 import com.google.maps.model.LatLng;
-import org.springframework.stereotype.Component;
-import ru.taxi.adminpanel.backend.domain.AddressEntity;
+import ru.taxi.adminpanel.backend.address.AddressEntity;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
-public class GoogleApiMapper {
+public class GoogleApiRetriever {
 
     private static final List<AddressComponentType> addressComponentTypes = asList(
             AddressComponentType.STREET_NUMBER,
@@ -44,7 +43,7 @@ public class GoogleApiMapper {
 
     private static Map<AddressComponentType, String> retrieveAddressComponents(AddressComponent[] addressComponents) {
         return Arrays.stream(addressComponents)
-                .filter(GoogleApiMapper::listsIntersectionPredicate)
+                .filter(GoogleApiRetriever::listsIntersectionPredicate)
                 .collect(Collectors.toMap(addressComponent -> addressComponent.types[0], addressComponent -> addressComponent.longName));
     }
 

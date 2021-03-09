@@ -38,4 +38,10 @@ public class GeneratorParametersEntity {
     @Column(nullable = false)
     private String language;
 
+    @Column(nullable = false)
+    private String predictorUrl;
+
+    @Column
+    private boolean clean;
+
 }

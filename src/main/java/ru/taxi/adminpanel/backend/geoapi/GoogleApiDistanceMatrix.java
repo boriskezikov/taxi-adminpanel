@@ -11,11 +11,11 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 import static java.util.Arrays.stream;
+import static ru.taxi.adminpanel.backend.utils.Constants.DEFAULT_TRIP_DURATION;
 
 @Component
-public class GoogleApiDistanceMatrix extends BasicGeoConfigurator {
+public class GoogleApiDistanceMatrix extends GoogleBasicGeoConfigurator {
 
-    private static final long DEFAULT = 3600;
 
     public long findRoadDuration(LatLng from, LatLng to) {
         try {
@@ -27,9 +27,9 @@ public class GoogleApiDistanceMatrix extends BasicGeoConfigurator {
             DistanceMatrixRow[] rows = distanceMatrix.rows;
             return stream(rows).flatMap(row -> stream(row.elements)).map(distanceMatrixElement -> distanceMatrixElement.duration)
                     .map(duration -> duration.inSeconds)
-                    .findFirst().orElse(DEFAULT);
+                    .findFirst().orElse(DEFAULT_TRIP_DURATION);
         } catch (ApiException | InterruptedException | IOException e) {
-            throw new ExternalApiException("Error:", e);
+            throw new GoogleApiException("Error:", e);
         } finally {
             geoApiContext.shutdown();
         }

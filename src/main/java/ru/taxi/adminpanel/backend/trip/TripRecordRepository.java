@@ -1,8 +1,7 @@
-package ru.taxi.adminpanel.backend.repository;
+package ru.taxi.adminpanel.backend.trip;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ru.taxi.adminpanel.backend.domain.TripRecordEntity;
 
 import java.math.BigInteger;
 

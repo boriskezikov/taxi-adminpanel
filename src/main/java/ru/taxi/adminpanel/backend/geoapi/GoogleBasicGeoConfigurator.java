@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class BasicGeoConfigurator {
+public class GoogleBasicGeoConfigurator {
 
     @Value("${google-api.key}")
     protected String xGoogleApiKey;

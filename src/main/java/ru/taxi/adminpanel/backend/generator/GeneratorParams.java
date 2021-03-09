@@ -4,7 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.util.Objects;
 
 @Builder
 @Data
@@ -13,8 +18,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class GeneratorParams {
 
+    @NotEmpty
     private String city;
-    private int rad;
-    private int ordersNumber;
+    @NotNull
+    private Integer rad;
+    @NotNull
+    private Integer ordersNumber;
+    @NotEmpty
     private String language;
+    @NotEmpty
+    private String predictorUrl;
+
+    private boolean removePreviouslyGenerated;
+
+
 }

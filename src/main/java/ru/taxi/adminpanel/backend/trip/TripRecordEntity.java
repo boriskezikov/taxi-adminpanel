@@ -1,4 +1,4 @@
-package ru.taxi.adminpanel.backend.domain;
+package ru.taxi.adminpanel.backend.trip;
 
 
 import lombok.AllArgsConstructor;
@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
+import ru.taxi.adminpanel.backend.address.AddressEntity;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;

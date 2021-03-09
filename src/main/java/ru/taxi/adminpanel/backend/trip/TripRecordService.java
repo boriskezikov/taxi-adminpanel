@@ -1,12 +1,12 @@
-package ru.taxi.adminpanel.backend.service;
+package ru.taxi.adminpanel.backend.trip;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
-import ru.taxi.adminpanel.backend.domain.TripRecordEntity;
-import ru.taxi.adminpanel.backend.dto.TripRecordDTO;
-import ru.taxi.adminpanel.backend.repository.TripRecordRepository;
+import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
+import ru.taxi.adminpanel.backend.trip.TripRecordDTO;
+import ru.taxi.adminpanel.backend.trip.TripRecordRepository;
 
 import java.math.BigInteger;
 import java.util.List;

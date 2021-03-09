@@ -1,4 +1,4 @@
-package ru.taxi.adminpanel.backend.dto;
+package ru.taxi.adminpanel.backend.trip;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

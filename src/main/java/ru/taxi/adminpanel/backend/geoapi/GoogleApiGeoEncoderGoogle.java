@@ -12,7 +12,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class GoogleApiGeoEncoder extends BasicGeoConfigurator {
+public class GoogleApiGeoEncoderGoogle extends GoogleBasicGeoConfigurator {
 
     public GeocodingResult encode(String city) {
         try {
@@ -21,12 +21,12 @@ public class GoogleApiGeoEncoder extends BasicGeoConfigurator {
                     .address(city)
                     .await());
             if (geocodingResults.size() != 1) {
-                throw new ExternalApiException("No bounds found for provided city_name: " + city + " or result is unclear." +
+                throw new GoogleApiException("No bounds found for provided city_name: " + city + " or result is unclear." +
                         " Try to add more detailed information!");
             }
             return geocodingResults.iterator().next();
         } catch (InterruptedException | IOException | ApiException e) {
-            throw new ExternalApiException("Error:", e);
+            throw new GoogleApiException("Error:", e);
         } finally {
             geoApiContext.shutdown();
         }
