@@ -4,24 +4,20 @@ import com.google.maps.model.LatLng;
 import com.namics.commons.random.generator.basic.LocalDateTimeGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.taxi.adminpanel.backend.address.AddressEntity;
 import ru.taxi.adminpanel.backend.address.AddressRepository;
 import ru.taxi.adminpanel.backend.geoapi.GoogleApiDistanceMatrix;
-import ru.taxi.adminpanel.backend.geoapi.GoogleApiException;
 import ru.taxi.adminpanel.backend.geoapi.GoogleApiGeoDecoderGoogle;
 import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
 import ru.taxi.adminpanel.backend.trip.TripRecordRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static ru.taxi.adminpanel.backend.generator.ArtificialDataHelper.getRandomPoint;
@@ -37,101 +33,63 @@ public class ArtificialDataGenerator {
     private final TripRecordRepository tripRecordRepository;
     private final AddressRepository addressRepository;
 
-    private static final Integer MAX_RETRIES = 10;
-    
-    public CompletableFuture<Void> generateAsync(GeneratorParametersEntity gParams) {
-        return CompletableFuture.runAsync(() -> generateUntilComplete(gParams)).thenRun(() -> {
-            log.info("Generation finished");
-        }).exceptionally(ex -> {
-            log.error("Generation failed with error {}, retry.", ex.getCause().toString());
-            generateUntilComplete(gParams);
-            return null;
+    public void generateAsync(GeneratorParametersEntity gParams) {
+        CompletableFuture.supplyAsync(() -> Stream.generate(() -> generateTrip(gParams)).parallel()
+                .limit(gParams.getOrdersNumber())
+                .filter(r -> r).count()).thenAccept((success) -> {
+            log.info("Generation finished: tasks {} - succeed, {} failed", success, gParams.getOrdersNumber() - success);
         });
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveOnComplete(List<TripRecordEntity> generatedTrips, boolean cleanUp) {
-        log.info("saveOnComplete");
-        if (cleanUp) {
-            tripRecordRepository.deleteAll();
-            addressRepository.deleteAll();
+
+    private boolean generateTrip(GeneratorParametersEntity gParams) {
+        try {
+            Pair<AddressEntity, AddressEntity> fromTo = supplyAddresses(supplyMapPoints(gParams), gParams.getLanguage());
+            TripRecordEntity trip = supplySingleTrip(fromTo);
+            saveOnComplete(trip, gParams.isClean());
+            return true;
+        } catch (Exception e) {
+            log.error(e.toString());
+            return false;
         }
-
-        tripRecordRepository.saveAll(generatedTrips);
     }
 
-    private void generateUntilComplete(GeneratorParametersEntity gParams) {
-        long start = System.currentTimeMillis();
-        List<TripRecordEntity> generatedTrips = new ArrayList<>();
-        int offset = gParams.getOrdersNumber();
-        while (offset > 0) {
-            log.info("Next Generation step. Offset: {}", offset);
-            gParams.setOrdersNumber(offset);
-            List<TripRecordEntity> tripRecordEntities = supplyTripsAsync(gParams);
-            generatedTrips.addAll(tripRecordEntities);
-            offset = gParams.getOrdersNumber() - generatedTrips.size();
-        }
-        saveOnComplete(generatedTrips, gParams.isClean());
-        log.info("Generation time: {}", System.currentTimeMillis() - start);
+    private Pair<LatLng, LatLng> supplyMapPoints(GeneratorParametersEntity gParams) {
+        return Pair.of(getRandomPoint(gParams), getRandomPoint(gParams));
     }
 
-    private List<TripRecordEntity> supplyTripsAsync(GeneratorParametersEntity gParams) {
-        CompletableFuture<List<AddressEntity>> fromAddressesFuture = CompletableFuture.supplyAsync(() -> supplyMapPoints(gParams))
-                .thenApply((res) -> supplyAddresses(res, gParams.getLanguage()))
-                .exceptionally(ex -> {
-                    log.error(ex.getCause().toString());
-                    throw new GoogleApiException("Error:", ex);
-                });
-
-        CompletableFuture<List<AddressEntity>> toAddressesFuture = CompletableFuture.supplyAsync(() -> supplyMapPoints(gParams))
-                .thenApply((res) -> supplyAddresses(res, gParams.getLanguage()))
-                .exceptionally(ex -> {
-                    log.error(ex.getCause().toString());
-                    throw new GoogleApiException("Error:", ex);
-                });
-        
-        List<AddressEntity> fromAddresses = fromAddressesFuture.join();
-        List<AddressEntity> toAddresses = toAddressesFuture.join();
-
-        fromAddresses.removeIf(ArtificialDataHelper::validateAddress);
-        toAddresses.removeIf(ArtificialDataHelper::validateAddress);
-
-        int limit = fromAddresses.size() < gParams.getOrdersNumber() ? fromAddresses.size() : gParams.getOrdersNumber();
-        return Stream.generate(() -> supplySingleTrip(fromAddresses, toAddresses))
-                .limit(limit)
-                .collect(Collectors.toList());
-    }
-
-    private List<LatLng> supplyMapPoints(GeneratorParametersEntity gParams) {
-        log.info("supplyMapPoints");
-        return Stream.generate(() -> getRandomPoint(gParams.getLng(), gParams.getLat(), gParams.getRad()))
-                .limit(gParams.getOrdersNumber())
-                .collect(Collectors.toList());
-    }
-
-    private TripRecordEntity supplySingleTrip(List<AddressEntity> fromAddr, List<AddressEntity> toAddr) {
+    private TripRecordEntity supplySingleTrip(Pair<AddressEntity, AddressEntity> fromTo) {
         LocalDateTimeGenerator localDateTimeGenerator = new LocalDateTimeGenerator();
-        int toIndex = ThreadLocalRandom.current().nextInt(toAddr.size()) % toAddr.size();
-        int fromIndex = ThreadLocalRandom.current().nextInt(fromAddr.size()) % fromAddr.size();
-        AddressEntity fromAddress = fromAddr.get(fromIndex);
-        AddressEntity toAddress = toAddr.get(toIndex);
         LocalDateTime tripBegin = localDateTimeGenerator.random();
-        long roadDuration = roadRetriever.findRoadDuration(fromAddress.getGeometry(), toAddress.getGeometry());
+        long roadDuration = roadRetriever.findRoadDuration(fromTo.getFirst().getGeometry(), fromTo.getSecond().getGeometry());
         LocalDateTime tripEnd = tripBegin.plusSeconds(roadDuration);
         log.info("Single trip supplied");
         return TripRecordEntity.builder()
-                .fromAddressEntity(fromAddress)
-                .toAddressEntity(toAddress)
+                .fromAddressEntity(fromTo.getFirst())
+                .toAddressEntity(fromTo.getSecond())
                 .tripBeginTime(tripBegin)
                 .tripEndTime(tripEnd)
                 .price(DEFAULT_PRICE_PER_MIN * roadDuration / 60)
                 .build();
     }
 
-    private List<AddressEntity> supplyAddresses(List<LatLng> coordinatesList, String lang) {
-        return coordinatesList.stream().parallel().flatMap(latLng -> {
-            List<AddressEntity> decoded = googleApiGeoDecoder.decode(latLng, lang);
-            return decoded.isEmpty() ? null : decoded.stream();
-        }).collect(Collectors.toList());
+    private Pair<AddressEntity, AddressEntity> supplyAddresses(Pair<LatLng, LatLng> fromToPair, String lang) {
+        CompletableFuture<AddressEntity> from = CompletableFuture.supplyAsync(() -> supplyAddress(fromToPair.getFirst(), lang));
+        CompletableFuture<AddressEntity> to = CompletableFuture.supplyAsync(() -> supplyAddress(fromToPair.getSecond(), lang));
+        return Pair.of(from.join(), to.join());
+    }
+
+    private AddressEntity supplyAddress(LatLng latLng, String lang) {
+        List<AddressEntity> decoded = googleApiGeoDecoder.decode(latLng, lang);
+        return decoded.isEmpty() ? null : decoded.stream().findFirst().get();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveOnComplete(TripRecordEntity generatedTrip, boolean cleanUp) {
+        if (cleanUp) {
+            tripRecordRepository.deleteAll();
+            addressRepository.deleteAll();
+        }
+        tripRecordRepository.save(generatedTrip);
     }
 }
