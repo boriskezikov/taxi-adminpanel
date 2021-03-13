@@ -37,6 +37,7 @@ public class SettingsView extends Div {
     private final Button regenerateDataButton = new Button("Regenerate data");
     private final Checkbox removeData = new Checkbox("Remove previously generated");
 
+
     public SettingsView(GeneratorAccessorService generatorAccessorService, ArtificialDataGenerator artificialDataGenerator) {
         GeneratorParametersEntity generatorParametersEntity = generatorAccessorService.loadParameters();
         addClassName("settings-view");
@@ -109,4 +110,6 @@ public class SettingsView extends Div {
         rad.setRequiredIndicatorVisible(true);
         ordersNumber.setRequiredIndicatorVisible(true);
     }
+
+
 }

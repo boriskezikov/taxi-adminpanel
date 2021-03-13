@@ -220,6 +220,16 @@
             <artifactId>java-random</artifactId>
             <version>1.1.7</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin.tapio</groupId>
+            <artifactId>googlemaps</artifactId>
+            <version>2.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.bowergithub.googlewebcomponents</groupId>
+            <artifactId>google-map</artifactId>
+            <version>2.0.4</version>
+        </dependency>
     </dependencies>
     <build>
         <defaultGoal>spring-boot:run</defaultGoal>

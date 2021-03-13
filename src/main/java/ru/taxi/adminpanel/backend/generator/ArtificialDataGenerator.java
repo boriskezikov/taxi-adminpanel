@@ -34,6 +34,10 @@ public class ArtificialDataGenerator {
     private final AddressRepository addressRepository;
 
     public void generateAsync(GeneratorParametersEntity gParams) {
+        if (gParams.isClean()) {
+            tripRecordRepository.deleteAll();
+            addressRepository.deleteAll();
+        }
         CompletableFuture.supplyAsync(() -> Stream.generate(() -> generateTrip(gParams)).parallel()
                 .limit(gParams.getOrdersNumber())
                 .filter(r -> r).count()).thenAccept((success) -> {
@@ -46,7 +50,7 @@ public class ArtificialDataGenerator {
         try {
             Pair<AddressEntity, AddressEntity> fromTo = supplyAddresses(supplyMapPoints(gParams), gParams.getLanguage());
             TripRecordEntity trip = supplySingleTrip(fromTo);
-            saveOnComplete(trip, gParams.isClean());
+            saveOnComplete(trip);
             return true;
         } catch (Exception e) {
             log.error(e.toString());
@@ -85,11 +89,7 @@ public class ArtificialDataGenerator {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void saveOnComplete(TripRecordEntity generatedTrip, boolean cleanUp) {
-        if (cleanUp) {
-            tripRecordRepository.deleteAll();
-            addressRepository.deleteAll();
-        }
+    public void saveOnComplete(TripRecordEntity generatedTrip) {
         tripRecordRepository.save(generatedTrip);
     }
 }
