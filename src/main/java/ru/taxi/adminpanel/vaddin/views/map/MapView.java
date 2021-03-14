@@ -96,7 +96,7 @@ public class MapView extends VerticalLayout {
 
     private LatLon findCenter() {
         Optional<TripRecordEntity> tripRecordEntityOpt = tripRecordRepository.findAll().stream().findAny();
-        if (tripRecordEntityOpt.isPresent()){
+        if (tripRecordEntityOpt.isPresent()) {
             LatLng geometry = tripRecordEntityOpt.get().getFromAddressEntity().getGeometry();
             return new LatLon(geometry.lat, geometry.lng);
         }

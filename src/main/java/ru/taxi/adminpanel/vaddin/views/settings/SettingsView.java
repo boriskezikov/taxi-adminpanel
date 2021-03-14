@@ -85,7 +85,7 @@ public class SettingsView extends Div {
     private Component createFormLayout() {
         FormLayout formLayout = new FormLayout();
         formLayout.add(nnServiceUrl, 2);
-        formLayout.add(city, rad, ordersNumber, language, datePickerLeft, datePickerRight,removeData);
+        formLayout.add(city, rad, ordersNumber, language, datePickerLeft, datePickerRight, removeData);
         return formLayout;
     }
 
