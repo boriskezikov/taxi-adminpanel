@@ -1,5 +1,7 @@
 #header {
   height: var(--lumo-size-xl);
+  padding: 0 var(--lumo-space-m);
+
 }
 #header img {
   border-radius: 50%;

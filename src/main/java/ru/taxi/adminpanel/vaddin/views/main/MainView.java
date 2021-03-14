@@ -5,7 +5,7 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.CssImport;
-import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
@@ -15,15 +15,18 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
-import ru.taxi.adminpanel.vaddin.views.about.AboutView;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import ru.taxi.adminpanel.vaddin.views.dashboard.DashboardView;
+import ru.taxi.adminpanel.vaddin.views.map.ChartsView;
+import ru.taxi.adminpanel.vaddin.views.map.MapView;
+import ru.taxi.adminpanel.vaddin.views.settings.SettingsView;
 
 import java.util.Optional;
 
-@Route(value = "main-view")
-@JsModule("./styles/shared-styles.js")
+
+@Slf4j
 @CssImport("./styles/views/main/main-view.css")
 public class MainView extends AppLayout {
 
@@ -31,7 +34,7 @@ public class MainView extends AppLayout {
     private H1 viewTitle;
 
     public MainView() {
-        setPrimarySection(Section.DRAWER);
+        setPrimarySection(Section.NAVBAR);
         addToNavbar(true, createHeaderContent());
         menu = createMenu();
         addToDrawer(createDrawerContent(menu));
@@ -40,7 +43,6 @@ public class MainView extends AppLayout {
     private Component createHeaderContent() {
         HorizontalLayout layout = new HorizontalLayout();
         layout.setId("header");
-        layout.getThemeList().set("dark", true);
         layout.setWidthFull();
         layout.setSpacing(false);
         layout.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -48,6 +50,12 @@ public class MainView extends AppLayout {
         viewTitle = new H1();
         layout.add(viewTitle);
         layout.add(new Image("images/user.svg", "Avatar"));
+        Anchor logout = new Anchor("/logout", "Log out");
+        logout.getElement().addEventListener("click", (event) -> {
+            SecurityContextHolder.clearContext();
+            log.info("Context cleared");
+        });
+        layout.add(logout);
         return layout;
     }
 
@@ -61,7 +69,6 @@ public class MainView extends AppLayout {
         HorizontalLayout logoLayout = new HorizontalLayout();
         logoLayout.setId("logo");
         logoLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        logoLayout.add(new Image("images/logo.png", "Adminpanel logo"));
         logoLayout.add(new H1("Adminpanel"));
         layout.add(logoLayout, menu);
         return layout;
@@ -77,7 +84,10 @@ public class MainView extends AppLayout {
     }
 
     private Component[] createMenuItems() {
-        return new Tab[]{createTab("Adminpanel", DashboardView.class), createTab("Settings", AboutView.class)};
+        return new Tab[]{createTab("Dashboard", DashboardView.class),
+                createTab("Generator settings", SettingsView.class),
+                createTab("Map", MapView.class),
+                createTab("Charts", ChartsView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
@@ -102,4 +112,5 @@ public class MainView extends AppLayout {
     private String getCurrentPageTitle() {
         return getContent().getClass().getAnnotation(PageTitle.class).value();
     }
+
 }
