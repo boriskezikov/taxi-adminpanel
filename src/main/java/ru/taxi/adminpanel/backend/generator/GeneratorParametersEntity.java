@@ -9,6 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.math.BigInteger;
+import java.time.LocalDate;
 
 @Data
 @AllArgsConstructor
@@ -30,10 +31,16 @@ public class GeneratorParametersEntity {
     private int rad;
 
     @Column(nullable = false)
-    private int ordersNumber;
+    private int ordersPerDayNumber;
 
     @Column(nullable = false)
     private String city;
+
+    @Column(nullable = false)
+    private LocalDate tripsDateLeftBorder;
+
+    @Column(nullable = false)
+    private LocalDate tripsDateRightBorder;
 
     @Column(nullable = false)
     private String language;

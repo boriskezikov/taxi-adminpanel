@@ -5,6 +5,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
@@ -32,11 +33,12 @@ public class SettingsView extends Div {
     private final IntegerField ordersNumber = new IntegerField("Orders number");
     private final ComboBox<String> nnServiceUrl = new ComboBox<>("NN url");
     private final ComboBox<String> language = new ComboBox<>("Lang");
+    private final DatePicker datePickerLeft = new DatePicker("Trips date left bound");
+    private final DatePicker datePickerRight = new DatePicker("Trips date right bound");
 
     private final Button cancelButton = new Button("Cancel");
     private final Button regenerateDataButton = new Button("Regenerate data");
     private final Checkbox removeData = new Checkbox("Remove previously generated");
-
 
     public SettingsView(GeneratorAccessorService generatorAccessorService, ArtificialDataGenerator artificialDataGenerator) {
         GeneratorParametersEntity generatorParametersEntity = generatorAccessorService.loadParameters();
@@ -51,13 +53,15 @@ public class SettingsView extends Div {
             try {
                 GeneratorParams generatorParams = GeneratorParams.builder()
                         .city(city.getValue())
-                        .ordersNumber(ordersNumber.getValue())
+                        .ordersPerDayNumber(ordersNumber.getValue())
                         .language(language.getValue())
                         .predictorUrl(nnServiceUrl.getValue())
                         .removePreviouslyGenerated(removeData.getValue())
+                        .tripsDateLeftBorder(datePickerLeft.getValue())
+                        .tripsDateRightBorder(datePickerRight.getValue())
                         .rad(rad.getValue()).build();
                 GeneratorParametersEntity updated = generatorAccessorService.updateGeneratorParams(generatorParams);
-                artificialDataGenerator.generateAsync(updated);
+                artificialDataGenerator.generate(updated);
                 Notification.show("Generator settings updated", 1000, Notification.Position.MIDDLE);
             } catch (Exception ex) {
                 Notification.show(ex.toString(), 1000, Notification.Position.MIDDLE);
@@ -69,17 +73,19 @@ public class SettingsView extends Div {
         if (generatorParameters != null) {
             city.setValue(generatorParameters.getCity());
             rad.setValue(generatorParameters.getRad());
-            ordersNumber.setValue(generatorParameters.getOrdersNumber());
+            ordersNumber.setValue(generatorParameters.getOrdersPerDayNumber());
             language.setValue(generatorParameters.getLanguage());
             nnServiceUrl.setValue(generatorParameters.getPredictorUrl());
             removeData.setValue(generatorParameters.isClean());
+            datePickerLeft.setValue(generatorParameters.getTripsDateLeftBorder());
+            datePickerRight.setValue(generatorParameters.getTripsDateRightBorder());
         }
     }
 
     private Component createFormLayout() {
         FormLayout formLayout = new FormLayout();
         formLayout.add(nnServiceUrl, 2);
-        formLayout.add(city, rad, ordersNumber, language, removeData);
+        formLayout.add(city, rad, ordersNumber, language, datePickerLeft, datePickerRight,removeData);
         return formLayout;
     }
 
@@ -110,6 +116,4 @@ public class SettingsView extends Div {
         rad.setRequiredIndicatorVisible(true);
         ordersNumber.setRequiredIndicatorVisible(true);
     }
-
-
 }

@@ -1,0 +1,75 @@
+.charts-view {
+    background-color: var(--lumo-contrast-10pct);
+    box-sizing: border-box;
+    display: block;
+    font-size: var(--lumo-font-size-m);
+    height: 100%;
+    overflow: auto;
+    padding: var(--lumo-space-m) var(--lumo-space-l);
+}
+
+.charts-view vaadin-board {
+    margin: 0 auto;
+    max-width: 1024px;
+}
+
+/* Wrapper */
+.charts-view .wrapper {
+    display: flex;
+    padding: var(--lumo-space-s);
+}
+
+/* Card */
+.charts-view .card {
+    align-items: baseline;
+    background-color: var(--lumo-base-color);
+    border-radius: var(--lumo-border-radius);
+    box-shadow: var(--lumo-box-shadow-xs);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    width: 100%;
+}
+
+.charts-view .card h2 {
+    margin-bottom: 0;
+    margin-top: var(--lumo-space-m);
+}
+
+.charts-view .card h3 {
+    margin-bottom: var(--lumo-space-xs);
+    margin-left: var(--lumo-space-m);
+    margin-top: var(--lumo-space-m);
+}
+
+/* Spacing */
+.charts-view .space-m {
+    padding: var(--lumo-space-m);
+}
+
+/* Text colors */
+.charts-view .error-text {
+    color: var(--lumo-error-text-color);
+}
+
+.charts-view .primary-text {
+    color: var(--lumo-primary-text-color);
+}
+
+.charts-view .secondary-text {
+    color: var(--lumo-secondary-text-color);
+}
+
+.charts-view .success-text {
+    color: var(--lumo-success-text-color);
+}
+
+/* Charts */
+.charts-view vaadin-chart {
+    padding-top: var(--lumo-space-s);
+}
+
+/* Grid */
+.charts-view vaadin-grid {
+    height: 300px;
+}

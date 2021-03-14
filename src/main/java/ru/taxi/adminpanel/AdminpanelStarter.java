@@ -20,6 +20,7 @@ public class AdminpanelStarter extends SpringBootServletInitializer implements A
 
     public static void main(String[] args) {
         SpringApplication.run(AdminpanelStarter.class, args);
+
     }
 
 }

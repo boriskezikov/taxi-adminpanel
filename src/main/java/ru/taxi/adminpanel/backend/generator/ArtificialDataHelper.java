@@ -3,8 +3,11 @@ package ru.taxi.adminpanel.backend.generator;
 import com.google.maps.model.LatLng;
 import ru.taxi.adminpanel.backend.address.AddressEntity;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class ArtificialDataHelper {
 
@@ -17,6 +20,21 @@ public class ArtificialDataHelper {
         double foundLatitude = gParams.getLat() + w * Math.sin(t);
         double foundLongitude = gParams.getLng() + new_x;
         return new LatLng(foundLatitude, foundLongitude);
+    }
+
+    public static LocalDate getDate(LocalDate left, LocalDate right) {
+        if (left == right) {
+            return left;
+        }
+        long randomDay = ThreadLocalRandom.current().nextLong(left.toEpochDay(), right.toEpochDay());
+        return LocalDate.ofEpochDay(randomDay);
+    }
+
+    public static LocalTime getTime() {
+        LocalTime l = LocalTime.of(0,0);
+        LocalTime r = LocalTime.of(23,59);
+        long randomTime = ThreadLocalRandom.current().nextLong(l.toNanoOfDay(), r.toNanoOfDay());
+        return LocalTime.ofNanoOfDay(randomTime);
     }
 
     public static boolean validateAddress(AddressEntity ae) {

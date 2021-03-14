@@ -7,8 +7,11 @@ import lombok.NoArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Builder
@@ -23,11 +26,15 @@ public class GeneratorParams {
     @NotNull
     private Integer rad;
     @NotNull
-    private Integer ordersNumber;
+    private Integer ordersPerDayNumber;
     @NotEmpty
     private String language;
     @NotEmpty
     private String predictorUrl;
+    @NotNull
+    private LocalDate tripsDateLeftBorder;
+    @NotNull
+    private LocalDate tripsDateRightBorder;
 
     private boolean removePreviouslyGenerated;
 

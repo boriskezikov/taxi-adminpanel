@@ -19,7 +19,8 @@ import com.vaadin.flow.router.RouterLink;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import ru.taxi.adminpanel.vaddin.views.dashboard.DashboardView;
-import ru.taxi.adminpanel.vaddin.views.settings.MapView;
+import ru.taxi.adminpanel.vaddin.views.map.ChartsView;
+import ru.taxi.adminpanel.vaddin.views.map.MapView;
 import ru.taxi.adminpanel.vaddin.views.settings.SettingsView;
 
 import java.util.Optional;
@@ -83,9 +84,10 @@ public class MainView extends AppLayout {
     }
 
     private Component[] createMenuItems() {
-        return new Tab[]{createTab("Adminpanel", DashboardView.class),
-                createTab("Settings", SettingsView.class),
-                createTab("Map", MapView.class)};
+        return new Tab[]{createTab("Dashboard", DashboardView.class),
+                createTab("Generator settings", SettingsView.class),
+                createTab("Map", MapView.class),
+                createTab("Charts", ChartsView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {
