@@ -1,25 +1,37 @@
 package ru.taxi.adminpanel.backend.utils;
 
 import com.google.gson.Gson;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 
+@Getter
 @Service
 @RequiredArgsConstructor
 public class HttpService {
 
 
     private final RestTemplate restTemplate;
+    private final AsyncRestTemplate asyncRestTemplate;
 
 
     public <T> T post(String url, HttpHeaders headers, Object body, Class<T> responseType) {
         return restTemplate.exchange(url,
                 HttpMethod.POST,
+                getHttpEntityFromDTO(body, headers),
+                responseType
+        ).getBody();
+    }
+
+    public <T> T put(String url, HttpHeaders headers, Object body, Class<T> responseType) {
+        return restTemplate.exchange(url,
+                HttpMethod.PUT,
                 getHttpEntityFromDTO(body, headers),
                 responseType
         ).getBody();

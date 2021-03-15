@@ -1,5 +1,6 @@
 package ru.taxi.adminpanel.vaddin.views.dashboard;
 
+import com.google.gwt.view.client.AsyncDataProvider;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.grid.Grid;
@@ -8,26 +9,29 @@ import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.gridpro.GridPro;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.vaadin.klaudeta.PaginatedGrid;
 import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
 import ru.taxi.adminpanel.backend.trip.TripRecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
 import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -38,6 +42,7 @@ import java.util.stream.Stream;
 @CssImport(value = "./styles/views/dashboard/dashboard-view.css", include = "lumo-badge")
 @JsModule("@vaadin/vaadin-lumo-styles/badge.js")
 @RouteAlias(value = "", layout = MainView.class)
+@PreserveOnRefresh
 public class DashboardView extends Div {
 
     private GridPro<TripRecordEntity> grid;
@@ -71,7 +76,7 @@ public class DashboardView extends Div {
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.MATERIAL_COLUMN_DIVIDERS);
         grid.setHeight("100%");
-        dataProvider = new ListDataProvider<>(tripRecordService.findAll());
+        dataProvider = new ListDataProvider<>(tripRecordService.findAll().join());
         grid.setDataProvider(dataProvider);
     }
 
@@ -118,13 +123,7 @@ public class DashboardView extends Div {
     private void createPriceColumn() {
         String header = "Trip price";
         priceColumn = grid
-                .addEditColumn(TripRecordEntity::getPrice,
-                        new NumberRenderer<>(TripRecordEntity::getPrice, NumberFormat.getCurrencyInstance(Locale.US)))
-                .text((item, newValue) -> {
-                    item.setPrice(Double.parseDouble(newValue));
-                    tripRecordService.updateRecord(item);
-                    Notification.show("Trip price has been updated");
-                })
+                .addColumn(new NumberRenderer<>(TripRecordEntity::getPrice, NumberFormat.getCurrencyInstance(Locale.US)))
                 .setComparator(TripRecordEntity::getPrice).setHeader(header)
                 .setAutoWidth(true);
         log.debug("{} column created", header);

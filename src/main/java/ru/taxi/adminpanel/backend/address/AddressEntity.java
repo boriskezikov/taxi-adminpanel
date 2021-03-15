@@ -6,14 +6,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.SequenceGenerator;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.SimpleTimeZone;
 import java.util.UUID;
 
@@ -69,5 +74,8 @@ public class AddressEntity {
     public LatLng getGeometry() {
         return new LatLng(Double.parseDouble(this.lat), Double.parseDouble(this.lng));
     }
+
+    @ManyToMany
+    public List<TripRecordEntity> tripRecordEntities = new ArrayList<>();
 
 }
