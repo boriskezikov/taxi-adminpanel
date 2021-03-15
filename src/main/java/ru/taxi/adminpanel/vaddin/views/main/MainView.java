@@ -34,7 +34,7 @@ public class MainView extends AppLayout {
     private H1 viewTitle;
 
     public MainView() {
-        setPrimarySection(Section.NAVBAR);
+        setPrimarySection(Section.DRAWER);
         addToNavbar(true, createHeaderContent());
         menu = createMenu();
         addToDrawer(createDrawerContent(menu));
@@ -84,10 +84,10 @@ public class MainView extends AppLayout {
     }
 
     private Component[] createMenuItems() {
-        return new Tab[]{createTab("Dashboard", DashboardView.class),
-                createTab("Generator settings", SettingsView.class),
-                createTab("Map", MapView.class),
-                createTab("Charts", ChartsView.class)};
+        return new Tab[]{createTab("Trips viewer page", DashboardView.class),
+                createTab("Artificial generator settings page", SettingsView.class),
+                createTab("Point map visual page", MapView.class),
+                createTab("Statistics visual page", ChartsView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {

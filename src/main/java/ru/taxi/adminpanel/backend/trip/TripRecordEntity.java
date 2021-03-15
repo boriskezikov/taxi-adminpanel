@@ -9,7 +9,6 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UpdateTimestamp;
 import ru.taxi.adminpanel.backend.address.AddressEntity;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -37,11 +36,11 @@ public class TripRecordEntity {
     private BigInteger id;
 
     @JoinColumn(name = "address_from_id", nullable = false)
-    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     private AddressEntity fromAddressEntity;
 
     @JoinColumn(name = "address_to_id", nullable = false)
-    @ManyToOne(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     private AddressEntity toAddressEntity;
 
     @Column(nullable = false)

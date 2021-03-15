@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableAsync;
 
 @PWA(
@@ -15,12 +16,12 @@ import org.springframework.scheduling.annotation.EnableAsync;
                 "./styles/offline.css",
                 "./images/offline.png"})
 @SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
+@EnableCaching
 @EnableAsync
 public class AdminpanelStarter extends SpringBootServletInitializer implements AppShellConfigurator {
 
     public static void main(String[] args) {
         SpringApplication.run(AdminpanelStarter.class, args);
-
     }
 
 }

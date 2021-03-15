@@ -16,18 +16,20 @@ import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import ru.taxi.adminpanel.backend.generator.ArtificialDataGenerator;
+import lombok.extern.slf4j.Slf4j;
 import ru.taxi.adminpanel.backend.generator.GeneratorAccessorService;
 import ru.taxi.adminpanel.backend.generator.GeneratorParametersEntity;
 import ru.taxi.adminpanel.backend.generator.GeneratorParams;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
 
+@Slf4j
 @CssImport("./styles/views/settings/settings-view.css")
 @Route(value = "settings", layout = MainView.class)
 @PageTitle("Settings")
 public class SettingsView extends Div {
 
+    private final GeneratorAccessorService generatorAccessorService;
     private final TextField city = new TextField("City");
     private final IntegerField rad = new IntegerField("Area radius");
     private final IntegerField ordersNumber = new IntegerField("Orders number");
@@ -37,11 +39,13 @@ public class SettingsView extends Div {
     private final DatePicker datePickerRight = new DatePicker("Trips date right bound");
 
     private final Button cancelButton = new Button("Cancel");
-    private final Button regenerateDataButton = new Button("Regenerate data");
+    private final Button generateTripsButton = new Button("Generate trips");
+    private final Button generateAddressesButton = new Button("Generate addresses");
     private final Checkbox removeData = new Checkbox("Remove previously generated");
 
-    public SettingsView(GeneratorAccessorService generatorAccessorService, ArtificialDataGenerator artificialDataGenerator) {
-        GeneratorParametersEntity generatorParametersEntity = generatorAccessorService.loadParameters();
+    public SettingsView(GeneratorAccessorService generatorAccessorService) {
+        this.generatorAccessorService = generatorAccessorService;
+        GeneratorParametersEntity generatorParametersEntity = loadParams();
         addClassName("settings-view");
         add(createTitle());
         add(createFormLayout());
@@ -49,7 +53,7 @@ public class SettingsView extends Div {
         configureComponents();
         fillActualParams(generatorParametersEntity);
         cancelButton.addClickListener(e -> fillActualParams(generatorParametersEntity));
-        regenerateDataButton.addClickListener(e -> {
+        generateTripsButton.addClickListener(e -> {
             try {
                 GeneratorParams generatorParams = GeneratorParams.builder()
                         .city(city.getValue())
@@ -57,16 +61,44 @@ public class SettingsView extends Div {
                         .language(language.getValue())
                         .predictorUrl(nnServiceUrl.getValue())
                         .removePreviouslyGenerated(removeData.getValue())
-                        .tripsDateLeftBorder(datePickerLeft.getValue())
-                        .tripsDateRightBorder(datePickerRight.getValue())
+                        .tripsDateLeftBorder(String.valueOf(datePickerLeft.getValue()))
+                        .tripsDateRightBorder(String.valueOf(datePickerRight.getValue()))
                         .rad(rad.getValue()).build();
-                GeneratorParametersEntity updated = generatorAccessorService.updateGeneratorParams(generatorParams);
-                artificialDataGenerator.generate(updated);
-                Notification.show("Generator settings updated", 1000, Notification.Position.MIDDLE);
+                generatorAccessorService.updateGeneratorParams(generatorParams);
+                generatorAccessorService.generateTrips();
+                Notification.show("Trips generation started", 1000, Notification.Position.MIDDLE);
             } catch (Exception ex) {
-                Notification.show(ex.toString(), 1000, Notification.Position.MIDDLE);
+                Notification.show("Generator internal error", 2000, Notification.Position.MIDDLE);
+                log.error(ex.toString());
             }
         });
+        generateAddressesButton.addClickListener(e -> {
+            try {
+                GeneratorParams generatorParams = GeneratorParams.builder()
+                        .city(city.getValue())
+                        .ordersPerDayNumber(ordersNumber.getValue())
+                        .language(language.getValue())
+                        .predictorUrl(nnServiceUrl.getValue())
+                        .removePreviouslyGenerated(removeData.getValue())
+                        .tripsDateLeftBorder(String.valueOf(datePickerLeft.getValue()))
+                        .tripsDateRightBorder(String.valueOf(datePickerRight.getValue()))
+                        .rad(rad.getValue()).build();
+                generatorAccessorService.updateGeneratorParams(generatorParams);
+                generatorAccessorService.generateAddresses();
+                Notification.show("Addresses generation started", 1000, Notification.Position.MIDDLE);
+            } catch (Exception ex) {
+                Notification.show("Generator internal error", 2000, Notification.Position.MIDDLE);
+                log.error(ex.toString());
+            }
+        });
+    }
+
+    private GeneratorParametersEntity loadParams() {
+        try {
+            return generatorAccessorService.loadParameters();
+        } catch (Exception e) {
+            return new GeneratorParametersEntity();
+        }
     }
 
     private void fillActualParams(GeneratorParametersEntity generatorParameters) {
@@ -98,8 +130,9 @@ public class SettingsView extends Div {
     private Component createButtonLayout() {
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.addClassName("button-layout");
-        regenerateDataButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonLayout.add(regenerateDataButton);
+        generateTripsButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        buttonLayout.add(generateTripsButton);
+        buttonLayout.add(generateAddressesButton);
         buttonLayout.add(cancelButton);
         return buttonLayout;
     }

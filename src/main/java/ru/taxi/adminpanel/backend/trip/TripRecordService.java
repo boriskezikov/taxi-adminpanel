@@ -3,14 +3,18 @@ package ru.taxi.adminpanel.backend.trip;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
-import ru.taxi.adminpanel.backend.trip.TripRecordDTO;
-import ru.taxi.adminpanel.backend.trip.TripRecordRepository;
 
 import java.math.BigInteger;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @Slf4j
@@ -42,8 +46,22 @@ public class TripRecordService {
         log.info("Record deleted: {} ", id);
     }
 
-    public List<TripRecordEntity> findAll() {
-        return tripRecordRepository.findAll();
+    @Async
+    @Cacheable("trips")
+    public CompletableFuture<List<TripRecordEntity>> findAll() {
+        return CompletableFuture.completedFuture(tripRecordRepository.findAll());
+    }
+
+    public Optional<TripRecordEntity> findById(BigInteger id){return tripRecordRepository.findById(id);}
+
+    @Cacheable("trips-in-range")
+    public Page<TripRecordEntity> findInRange(LocalDateTime l, LocalDateTime r, Pageable p) {
+        return tripRecordRepository.findAllByTripBeginTimeAfterAndTripBeginTimeBefore(l, r, p);
+    }
+
+    @Cacheable("trips")
+    public Page<TripRecordEntity> findAll(Pageable pageable){
+        return tripRecordRepository.findAll(pageable);
     }
 
 }
