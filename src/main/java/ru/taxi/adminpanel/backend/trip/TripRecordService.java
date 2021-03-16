@@ -47,19 +47,16 @@ public class TripRecordService {
     }
 
     @Async
-    @Cacheable("trips")
     public CompletableFuture<List<TripRecordEntity>> findAll() {
         return CompletableFuture.completedFuture(tripRecordRepository.findAll());
     }
 
     public Optional<TripRecordEntity> findById(BigInteger id){return tripRecordRepository.findById(id);}
 
-    @Cacheable("trips-in-range")
     public Page<TripRecordEntity> findInRange(LocalDateTime l, LocalDateTime r, Pageable p) {
         return tripRecordRepository.findAllByTripBeginTimeAfterAndTripBeginTimeBefore(l, r, p);
     }
 
-    @Cacheable("trips")
     public Page<TripRecordEntity> findAll(Pageable pageable){
         return tripRecordRepository.findAll(pageable);
     }
