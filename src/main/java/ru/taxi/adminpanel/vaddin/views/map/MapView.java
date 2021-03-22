@@ -40,17 +40,16 @@ public class MapView extends VerticalLayout {
     private final GoogleMap gmaps;
     private final Button loadPointsButton = new Button("Load order points");
     private final Button cleanPointsButton = new Button("Clean map");
-    private final DateTimePicker tripDateTimePicker;
+    private final DateTimePicker tripDateTimePicker = new DateTimePicker("Points range");
     private static final String ICON_URL = "https://www.flowingcode.com/wp-content/uploads/2020/06/FCMarker.png";
     private final TripRecordService tripRecordService;
     protected String xGoogleApiKey = "AIzaSyB8V8hR1JKIG9L8ojccE5cOfMD4hS3seoA";
-    private final IntegerField tripsLimit = new IntegerField("Trips limit");
+    private final IntegerField tripsLimit = new IntegerField("Points number limit");
 
     private static final int DEFAULT_TRIPS_LIMIT = 100;
 
     public MapView(TripRecordService tripRecordService) {
         this.gmaps = new GoogleMap(xGoogleApiKey, null, null);
-        this.tripDateTimePicker = new DateTimePicker();
         this.tripRecordService = tripRecordService;
         configure();
         add(createFilterLayout());

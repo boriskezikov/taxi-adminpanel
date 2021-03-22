@@ -1,6 +1,5 @@
 package ru.taxi.adminpanel.vaddin.views.dashboard;
 
-import com.google.gwt.view.client.AsyncDataProvider;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.grid.Grid;
@@ -22,16 +21,11 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.vaadin.klaudeta.PaginatedGrid;
 import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
 import ru.taxi.adminpanel.backend.trip.TripRecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
-import java.text.NumberFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -76,8 +70,10 @@ public class DashboardView extends Div {
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.MATERIAL_COLUMN_DIVIDERS);
         grid.setHeight("100%");
-        dataProvider = new ListDataProvider<>(tripRecordService.findAll().join());
-        grid.setDataProvider(dataProvider);
+        tripRecordService.findAll().whenComplete((tr, ex) -> {
+            dataProvider = new ListDataProvider<>(tr);
+            grid.setDataProvider(dataProvider);
+        });
     }
 
     private void addColumnsToGrid() {
@@ -123,7 +119,7 @@ public class DashboardView extends Div {
     private void createPriceColumn() {
         String header = "Trip price";
         priceColumn = grid
-                .addColumn(new NumberRenderer<>(TripRecordEntity::getPrice, NumberFormat.getCurrencyInstance(Locale.US)))
+                .addColumn(new NumberRenderer<>(TripRecordEntity::getPrice, "%s₽"))
                 .setComparator(TripRecordEntity::getPrice).setHeader(header)
                 .setAutoWidth(true);
         log.debug("{} column created", header);
