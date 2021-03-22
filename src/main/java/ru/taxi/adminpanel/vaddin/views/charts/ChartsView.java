@@ -1,4 +1,4 @@
-package ru.taxi.adminpanel.vaddin.views.map;
+package ru.taxi.adminpanel.vaddin.views.charts;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.board.Board;
@@ -40,9 +40,9 @@ import java.util.stream.Collectors;
 @PageTitle("Chartboard")
 @PreserveOnRefresh
 public class ChartsView extends Div {
-    private Grid<String> grid = new Grid<>();
+    private final Grid<String> grid = new Grid<>();
 
-    private Chart responseTimes = new Chart();
+    private final Chart responseTimes = new Chart();
     private final H2 addressesCount = new H2();
     private final H2 tripsCount = new H2();
     private final H2 mostPopularArea = new H2();
@@ -91,7 +91,6 @@ public class ChartsView extends Div {
     }
 
     private void populateCharts() {
-        //populate cities list
         CompletableFuture<List<TripRecordEntity>> tripsFuture = tripRecordService.findAll();
         tripsFuture.whenComplete((trips, throwable) -> {
             if (throwable != null) {
@@ -111,13 +110,6 @@ public class ChartsView extends Div {
             addressesCount.setText(String.valueOf(addressesGenerated));
         });
 
-
-//        Map<LocalDateTime, List<String>> zipToTime = new HashMap<>();
-//        for (TripRecordEntity trip : trips) {
-//            if (zipToTime.put(trip.getTripBeginTime(), trip.getFromAddressEntity().getZipCode()) != null) {
-//                throw new IllegalStateException("Duplicate key");
-//            }
-//        }
         // Second chart
         Configuration configuration = responseTimes.getConfiguration();
         configuration

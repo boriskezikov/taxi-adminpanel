@@ -19,7 +19,7 @@ import com.vaadin.flow.router.RouterLink;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import ru.taxi.adminpanel.vaddin.views.dashboard.DashboardView;
-import ru.taxi.adminpanel.vaddin.views.map.ChartsView;
+import ru.taxi.adminpanel.vaddin.views.charts.ChartsView;
 import ru.taxi.adminpanel.vaddin.views.map.MapView;
 import ru.taxi.adminpanel.vaddin.views.settings.SettingsView;
 

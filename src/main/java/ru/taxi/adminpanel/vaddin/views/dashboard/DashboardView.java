@@ -123,7 +123,7 @@ public class DashboardView extends Div {
     private void createPriceColumn() {
         String header = "Trip price";
         priceColumn = grid
-                .addColumn(new NumberRenderer<>(TripRecordEntity::getPrice, NumberFormat.getCurrencyInstance(Locale.US)))
+                .addColumn(new NumberRenderer<>(TripRecordEntity::getPrice, "%s₽"))
                 .setComparator(TripRecordEntity::getPrice).setHeader(header)
                 .setAutoWidth(true);
         log.debug("{} column created", header);
