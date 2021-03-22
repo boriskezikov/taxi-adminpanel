@@ -1,13 +1,13 @@
-package ru.taxi.adminpanel.vaddin.views.map;
+package ru.taxi.adminpanel.vaddin.views.charts;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.charts.Chart;
+import com.vaadin.flow.component.charts.model.ChartType;
 import com.vaadin.flow.component.charts.model.Configuration;
-import com.vaadin.flow.component.charts.model.Crosshair;
-import com.vaadin.flow.component.charts.model.ListSeries;
-import com.vaadin.flow.component.charts.model.XAxis;
-import com.vaadin.flow.component.charts.model.YAxis;
+import com.vaadin.flow.component.charts.model.DataSeries;
+import com.vaadin.flow.component.charts.model.DataSeriesItem;
+import com.vaadin.flow.component.charts.model.RangeSelector;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.GridVariant;
@@ -26,6 +26,8 @@ import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
 import ru.taxi.adminpanel.backend.trip.TripRecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,16 +40,15 @@ import java.util.stream.Collectors;
 @CssImport("./styles/views/charts/charts-view.css")
 @Route(value = "charts", layout = MainView.class)
 @PageTitle("Chartboard")
-@PreserveOnRefresh
 public class ChartsView extends Div {
-    private Grid<String> grid = new Grid<>();
+    private final Grid<String> grid = new Grid<>();
 
-    private Chart responseTimes = new Chart();
     private final H2 addressesCount = new H2();
     private final H2 tripsCount = new H2();
     private final H2 mostPopularArea = new H2();
     private final TripRecordService tripRecordService;
     private final AddressRepository addressRepository;
+    private final Chart tripsPerRangeChart = new Chart(ChartType.SPLINE);
 
 
     public ChartsView(TripRecordService tripRecordService, AddressRepository addressRepository) {
@@ -69,9 +70,10 @@ public class ChartsView extends Div {
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         WrapperCard gridWrapper = new WrapperCard("wrapper", new Component[]{new H3("Cities around main"), grid}, "card");
-        responseTimes.getConfiguration().setTitle("Response times");
-        WrapperCard responseTimesWrapper = new WrapperCard("wrapper", new Component[]{responseTimes}, "card");
-        board.addRow(gridWrapper, responseTimesWrapper);
+        tripsPerRangeChart.getConfiguration().setTitle("Trips in range times");
+        WrapperCard responseTimesWrapper = new WrapperCard("wrapper", new Component[]{tripsPerRangeChart}, "card");
+        board.addRow(gridWrapper);
+        board.addRow(responseTimesWrapper);
 
         add(board);
 
@@ -91,7 +93,6 @@ public class ChartsView extends Div {
     }
 
     private void populateCharts() {
-        //populate cities list
         CompletableFuture<List<TripRecordEntity>> tripsFuture = tripRecordService.findAll();
         tripsFuture.whenComplete((trips, throwable) -> {
             if (throwable != null) {
@@ -109,27 +110,28 @@ public class ChartsView extends Div {
 
             long addressesGenerated = addressRepository.count();
             addressesCount.setText(String.valueOf(addressesGenerated));
+
+            // Second chart
+            tripsPerRangeChart.setTimeline(true);
+            Configuration configuration = tripsPerRangeChart.getConfiguration();
+            configuration.getTooltip().setEnabled(true);
+
+            DataSeries dataSeries = new DataSeries();
+            trips.stream().map(TripRecordEntity::getTripBeginTime).collect(Collectors.groupingBy(time -> {
+                int minutes = time.getMinute();
+                int minutesOver = minutes % 15;
+                return time.truncatedTo(ChronoUnit.MINUTES).withMinute(minutes - minutesOver).toInstant(ZoneOffset.UTC).toEpochMilli();
+            }, Collectors.counting())).entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach((entry) -> {
+                DataSeriesItem item = new DataSeriesItem();
+                item.setX(entry.getKey());
+                item.setY(entry.getValue());
+                dataSeries.add(item);
+            });
+
+            configuration.addSeries(dataSeries);
+            RangeSelector rangeSelector = new RangeSelector();
+            rangeSelector.setSelected(1);
+            configuration.setRangeSelector(rangeSelector);
         });
-
-
-//        Map<LocalDateTime, List<String>> zipToTime = new HashMap<>();
-//        for (TripRecordEntity trip : trips) {
-//            if (zipToTime.put(trip.getTripBeginTime(), trip.getFromAddressEntity().getZipCode()) != null) {
-//                throw new IllegalStateException("Duplicate key");
-//            }
-//        }
-        // Second chart
-        Configuration configuration = responseTimes.getConfiguration();
-        configuration
-                .addSeries(new ListSeries("Time", 7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 26.5, 23.3, 18.3, 13.9, 9.6));
-
-        XAxis x = new XAxis();
-        x.setCrosshair(new Crosshair());
-        x.setCategories("00:00", "01:00", "02:00", "03:00", "04:00", "05:00", "06:00", "07:00", "08:00", "09:00", "10:00", "11:00");
-        configuration.addxAxis(x);
-
-        YAxis y = new YAxis();
-        y.setMin(0);
-        configuration.addyAxis(y);
     }
 }

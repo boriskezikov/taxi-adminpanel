@@ -1,12 +1,14 @@
 package ru.taxi.adminpanel.vaddin.views.settings;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.dependency.CssImport;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
@@ -45,14 +47,12 @@ public class SettingsView extends Div {
 
     public SettingsView(GeneratorAccessorService generatorAccessorService) {
         this.generatorAccessorService = generatorAccessorService;
-        GeneratorParametersEntity generatorParametersEntity = loadParams();
         addClassName("settings-view");
         add(createTitle());
         add(createFormLayout());
         add(createButtonLayout());
         configureComponents();
-        fillActualParams(generatorParametersEntity);
-        cancelButton.addClickListener(e -> fillActualParams(generatorParametersEntity));
+        actualParamsLoader();
         generateTripsButton.addClickListener(e -> {
             try {
                 GeneratorParams generatorParams = GeneratorParams.builder()
@@ -91,6 +91,26 @@ public class SettingsView extends Div {
                 log.error(ex.toString());
             }
         });
+    }
+
+    private void actualParamsLoader() {
+        try {
+            GeneratorParametersEntity generatorParametersEntity = loadParams();
+            fillActualParams(generatorParametersEntity);
+            cancelButton.addClickListener(e -> fillActualParams(generatorParametersEntity));
+        } catch (Exception ex) {
+            disableForm();
+            Dialog dialog = new Dialog();
+            dialog.add(
+                    new Html("<div>Generator service currently unavailable. Try later or contact support.<br><br>support.panel@taxi.ru<br>8-(800)-422-31-23</div>"));
+            dialog.open();
+        }
+    }
+
+    private void disableForm() {
+        generateTripsButton.setEnabled(false);
+        generateAddressesButton.setEnabled(false);
+        cancelButton.setEnabled(false);
     }
 
     private GeneratorParametersEntity loadParams() {

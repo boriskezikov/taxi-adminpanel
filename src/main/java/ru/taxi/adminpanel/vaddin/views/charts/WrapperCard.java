@@ -1,4 +1,4 @@
-package ru.taxi.adminpanel.vaddin.views.map;
+package ru.taxi.adminpanel.vaddin.views.charts;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
