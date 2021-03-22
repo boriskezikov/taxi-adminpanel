@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 @CssImport("./styles/views/charts/charts-view.css")
 @Route(value = "charts", layout = MainView.class)
 @PageTitle("Chartboard")
-@PreserveOnRefresh
 public class ChartsView extends Div {
     private final Grid<String> grid = new Grid<>();
 
