@@ -4,7 +4,6 @@ package ru.taxi.adminpanel.vaddin.views.map;
 import com.flowingcode.vaadin.addons.googlemaps.GoogleMap;
 import com.flowingcode.vaadin.addons.googlemaps.GoogleMapMarker;
 import com.flowingcode.vaadin.addons.googlemaps.LatLon;
-import com.google.maps.model.LatLng;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -91,9 +90,7 @@ public class MapView extends VerticalLayout {
             trips.stream().parallel()
                     .forEach(tripRecordEntity -> {
                         AddressEntity from = tripRecordEntity.getFromAddressEntity();
-                        LatLon latLon = new LatLon(from.getGeometry().lat, from.getGeometry().lng);
-                        gmaps.addMarker(from.getFormattedAddress(), latLon, true, ICON_URL);
-                        log.info("Point [lat:{}, lng:{}] added to map", from.getGeometry().lat, from.getGeometry().lng);
+                        gmaps.addMarker(from.getFormattedAddress(), from.getGeometry(), true, ICON_URL);
                     });
         });
 
@@ -121,8 +118,7 @@ public class MapView extends VerticalLayout {
     private LatLon findCenter() {
         var tripRecordEntityOpt = tripRecordService.findById(BigInteger.ONE);
         if (tripRecordEntityOpt.isPresent()) {
-            LatLng geometry = tripRecordEntityOpt.get().getFromAddressEntity().getGeometry();
-            return new LatLon(geometry.lat, geometry.lng);
+            return tripRecordEntityOpt.get().getFromAddressEntity().getGeometry();
         }
         return new LatLon(0, 0);
     }

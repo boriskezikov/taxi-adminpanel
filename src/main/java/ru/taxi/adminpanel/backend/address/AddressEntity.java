@@ -1,6 +1,6 @@
 package ru.taxi.adminpanel.backend.address;
 
-import com.google.maps.model.LatLng;
+import com.flowingcode.vaadin.addons.googlemaps.LatLon;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -71,8 +71,8 @@ public class AddressEntity {
     }
 
 
-    public LatLng getGeometry() {
-        return new LatLng(Double.parseDouble(this.lat), Double.parseDouble(this.lng));
+    public LatLon getGeometry() {
+        return new LatLon(Double.parseDouble(this.lat), Double.parseDouble(this.lng));
     }
 
     @ManyToMany
