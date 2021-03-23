@@ -1,6 +1,7 @@
 package ru.taxi.adminpanel.vaddin.views.charts;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.board.Board;
 import com.vaadin.flow.component.charts.Chart;
 import com.vaadin.flow.component.charts.model.ChartType;
@@ -17,8 +18,8 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLayout;
 import lombok.extern.slf4j.Slf4j;
 import ru.taxi.adminpanel.backend.address.AddressEntity;
 import ru.taxi.adminpanel.backend.address.AddressRepository;
@@ -40,7 +41,8 @@ import java.util.stream.Collectors;
 @CssImport("./styles/views/charts/charts-view.css")
 @Route(value = "charts", layout = MainView.class)
 @PageTitle("Chartboard")
-public class ChartsView extends Div {
+//@Push(PushMode.MANUAL)
+public class ChartsView extends Div implements RouterLayout {
     private final Grid<String> grid = new Grid<>();
 
     private final H2 addressesCount = new H2();
@@ -49,17 +51,14 @@ public class ChartsView extends Div {
     private final TripRecordService tripRecordService;
     private final AddressRepository addressRepository;
     private final Chart tripsPerRangeChart = new Chart(ChartType.SPLINE);
+    private static final int TRIPS_RANGE_CONST = 20;
 
 
     public ChartsView(TripRecordService tripRecordService, AddressRepository addressRepository) {
         this.tripRecordService = tripRecordService;
         this.addressRepository = addressRepository;
         addClassName("charts-view");
-        Board board = new Board();
-        board.addRow(createBadge("Trips", tripsCount, "primary-text", "Trips in the current area", "badge"),
-                createBadge("Area", mostPopularArea, "success-text", "Most popular area", "badge success"),
-                createBadge("Addresses", addressesCount, "success-text", "Addresses found for this region", "badge success")
-        );
+
         grid.addColumn(String::valueOf).setHeader("City");
         grid.addColumn(new ComponentRenderer<>(item -> {
             Span span = new Span("Connected");
@@ -70,14 +69,25 @@ public class ChartsView extends Div {
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         WrapperCard gridWrapper = new WrapperCard("wrapper", new Component[]{new H3("Cities around main"), grid}, "card");
-        tripsPerRangeChart.getConfiguration().setTitle("Trips in range times");
         WrapperCard responseTimesWrapper = new WrapperCard("wrapper", new Component[]{tripsPerRangeChart}, "card");
+
+        Board board = initBoard();
         board.addRow(gridWrapper);
         board.addRow(responseTimesWrapper);
 
         add(board);
 
-        populateCharts();
+        UI current = UI.getCurrent();
+        CompletableFuture.runAsync(() -> current.access(this::populateCharts)).thenRun(current::push);
+    }
+
+    private Board initBoard() {
+        Board board = new Board();
+        board.addRow(createBadge("Trips", tripsCount, "primary-text", "Trips in the current area", "badge"),
+                createBadge("Area", mostPopularArea, "success-text", "Most popular area", "badge success"),
+                createBadge("Addresses", addressesCount, "success-text", "Addresses found for this region", "badge success")
+        );
+        return board;
     }
 
     private WrapperCard createBadge(String title, H2 h2, String h2ClassName, String description, String badgeTheme) {
@@ -93,45 +103,54 @@ public class ChartsView extends Div {
     }
 
     private void populateCharts() {
-        CompletableFuture<List<TripRecordEntity>> tripsFuture = tripRecordService.findAll();
-        tripsFuture.whenComplete((trips, throwable) -> {
-            if (throwable != null) {
-                throw new RuntimeException(throwable);
-            }
-            Set<String> addresses = trips.stream().map(TripRecordEntity::getFromAddressEntity)
-                    .map(AddressEntity::getCity)
-                    .collect(Collectors.toSet());
-            tripsCount.setText(String.valueOf(trips.size()));
-            grid.setItems(addresses);
+        List<TripRecordEntity> trips = tripRecordService.findAll();
+        populateCitiesConnectedGrid(trips);
+        populateMostPopularRegionTab(trips);
+        populateTripsPerRangeChart(trips);
+        populateAddressesGeneratedTab();
+    }
 
-            var areas = trips.parallelStream().map(t -> t.getFromAddressEntity().getZipCode()).collect(Collectors.groupingBy(s -> Objects.requireNonNullElse(s, "NO ZIPCODE"), Collectors.counting()));
-            String mostPopularZip = Collections.max(areas.entrySet(), Map.Entry.comparingByValue()).getKey();
-            mostPopularArea.setText(String.valueOf(mostPopularZip));
+    private void populateCitiesConnectedGrid(List<TripRecordEntity> trips) {
+        Set<String> citiesInTheArea = trips.stream().map(TripRecordEntity::getFromAddressEntity)
+                .map(AddressEntity::getCity)
+                .collect(Collectors.toSet());
+        tripsCount.setText(String.valueOf(trips.size()));
+        grid.setItems(citiesInTheArea);
+    }
 
-            long addressesGenerated = addressRepository.count();
-            addressesCount.setText(String.valueOf(addressesGenerated));
+    private void populateAddressesGeneratedTab() {
+        long addressesGenerated = addressRepository.count();
+        addressesCount.setText(String.valueOf(addressesGenerated));
+    }
 
-            // Second chart
-            tripsPerRangeChart.setTimeline(true);
-            Configuration configuration = tripsPerRangeChart.getConfiguration();
-            configuration.getTooltip().setEnabled(true);
+    private void populateMostPopularRegionTab(List<TripRecordEntity> trips) {
+        var areas = trips.parallelStream().map(t -> t.getFromAddressEntity().getZipCode()).collect(Collectors.groupingBy(s -> Objects.requireNonNullElse(s, "NO ZIPCODE"), Collectors.counting()));
+        String mostPopularZip = Collections.max(areas.entrySet(), Map.Entry.comparingByValue()).getKey();
+        mostPopularArea.setText(String.valueOf(mostPopularZip));
+    }
 
-            DataSeries dataSeries = new DataSeries();
-            trips.stream().map(TripRecordEntity::getTripBeginTime).collect(Collectors.groupingBy(time -> {
-                int minutes = time.getMinute();
-                int minutesOver = minutes % 15;
-                return time.truncatedTo(ChronoUnit.MINUTES).withMinute(minutes - minutesOver).toInstant(ZoneOffset.UTC).toEpochMilli();
-            }, Collectors.counting())).entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach((entry) -> {
-                DataSeriesItem item = new DataSeriesItem();
-                item.setX(entry.getKey());
-                item.setY(entry.getValue());
-                dataSeries.add(item);
-            });
+    private void populateTripsPerRangeChart(List<TripRecordEntity> trips) {
 
-            configuration.addSeries(dataSeries);
-            RangeSelector rangeSelector = new RangeSelector();
-            rangeSelector.setSelected(1);
-            configuration.setRangeSelector(rangeSelector);
+        tripsPerRangeChart.getConfiguration().setTitle("Trips in range times");
+        tripsPerRangeChart.setTimeline(true);
+        Configuration configuration = tripsPerRangeChart.getConfiguration();
+        configuration.getTooltip().setEnabled(true);
+
+        DataSeries dataSeries = new DataSeries();
+        Map<Long, Long> collect = trips.stream().map(TripRecordEntity::getTripBeginTime).collect(Collectors.groupingBy(time -> {
+            var minutes = time.getMinute();
+            var minutesOver = minutes % TRIPS_RANGE_CONST;
+            return time.truncatedTo(ChronoUnit.MINUTES).withMinute(minutes - minutesOver).toInstant(ZoneOffset.UTC).toEpochMilli();
+        }, Collectors.counting()));
+        collect.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach((entry) -> {
+            var item = new DataSeriesItem();
+            item.setX(entry.getKey());
+            item.setY(entry.getValue());
+            dataSeries.add(item);
         });
+        configuration.addSeries(dataSeries);
+        RangeSelector rangeSelector = new RangeSelector();
+        rangeSelector.setSelected(1);
+        configuration.setRangeSelector(rangeSelector);
     }
 }

@@ -3,7 +3,6 @@ package ru.taxi.adminpanel.backend.trip;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
@@ -47,17 +46,23 @@ public class TripRecordService {
     }
 
     @Async
-    public CompletableFuture<List<TripRecordEntity>> findAll() {
+    public CompletableFuture<List<TripRecordEntity>> findAllAsync() {
         return CompletableFuture.completedFuture(tripRecordRepository.findAll());
     }
 
-    public Optional<TripRecordEntity> findById(BigInteger id){return tripRecordRepository.findById(id);}
+    public List<TripRecordEntity> findAll() {
+        return tripRecordRepository.findAll();
+    }
+
+    public Optional<TripRecordEntity> findById(BigInteger id) {
+        return tripRecordRepository.findById(id);
+    }
 
     public Page<TripRecordEntity> findInRange(LocalDateTime l, LocalDateTime r, Pageable p) {
         return tripRecordRepository.findAllByTripBeginTimeAfterAndTripBeginTimeBefore(l, r, p);
     }
 
-    public Page<TripRecordEntity> findAll(Pageable pageable){
+    public Page<TripRecordEntity> findAll(Pageable pageable) {
         return tripRecordRepository.findAll(pageable);
     }
 

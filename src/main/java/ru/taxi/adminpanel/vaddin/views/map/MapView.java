@@ -7,11 +7,12 @@ import com.flowingcode.vaadin.addons.googlemaps.LatLon;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.datetimepicker.DateTimePicker;
+import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.IntegerField;
+import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
@@ -25,9 +26,8 @@ import ru.taxi.adminpanel.backend.trip.TripRecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
 import java.math.BigInteger;
-import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalTime;
 import java.util.Optional;
 
 @Slf4j
@@ -39,7 +39,9 @@ public class MapView extends VerticalLayout {
     private final GoogleMap gmaps;
     private final Button loadPointsButton = new Button("Load order points");
     private final Button cleanPointsButton = new Button("Clean map");
-    private final DateTimePicker tripDateTimePicker = new DateTimePicker("Points range");
+    private final DatePicker datePicker = new DatePicker("Day");
+    private final TimePicker timePickerFrom = new TimePicker("From time");
+    private final TimePicker timePickerTo = new TimePicker("To time");
     private static final String ICON_URL = "https://www.flowingcode.com/wp-content/uploads/2020/06/FCMarker.png";
     private final TripRecordService tripRecordService;
     protected String xGoogleApiKey = "AIzaSyB8V8hR1JKIG9L8ojccE5cOfMD4hS3seoA";
@@ -75,18 +77,23 @@ public class MapView extends VerticalLayout {
     private void configureButton() {
 
         loadPointsButton.addClickListener(e -> {
+            if (datePicker.getValue() == null) {
+                Notification.show(datePicker.getErrorMessage(), 2000, Notification.Position.MIDDLE);
+                return;
+            }
             gmaps.getChildren().forEach(ch -> gmaps.removeMarker((GoogleMapMarker) ch));
-            Optional<LocalDateTime> value = Optional.ofNullable(tripDateTimePicker.getValue());
-            Page<TripRecordEntity> trips;
+            Optional<LocalTime> timePickerFromValue = Optional.ofNullable(timePickerFrom.getValue());
+            Optional<LocalTime> timePickerToValue = Optional.ofNullable(timePickerTo.getValue());
             int tripsLimitCount = tripsLimit.getValue() == null ? DEFAULT_TRIPS_LIMIT : tripsLimit.getValue();
             Pageable pageable = PageRequest.of(0, tripsLimitCount);
 
-            if (value.isPresent()) {
-                trips = tripRecordService.findInRange(value.get(), value.get().plusSeconds(86400), pageable);
-            } else {
-                trips = tripRecordService.findAll(pageable);
-            }
-            trips.stream().parallel()
+            LocalTime timeFrom = timePickerFromValue.orElse(LocalTime.MIN);
+            LocalTime timeTo = timePickerToValue.orElse(LocalTime.MAX);
+
+            LocalDateTime searchDateTimeFrom = LocalDateTime.of(datePicker.getValue(), timeFrom);
+            LocalDateTime searchDateTimeTo = LocalDateTime.of(datePicker.getValue(), timeTo);
+            Page<TripRecordEntity> rangedTrips = tripRecordService.findInRange(searchDateTimeFrom, searchDateTimeTo, pageable);
+            rangedTrips.stream().parallel()
                     .forEach(tripRecordEntity -> {
                         AddressEntity from = tripRecordEntity.getFromAddressEntity();
                         gmaps.addMarker(from.getFormattedAddress(), from.getGeometry(), true, ICON_URL);
@@ -115,7 +122,7 @@ public class MapView extends VerticalLayout {
     }
 
     private LatLon findCenter() {
-        var tripRecordEntityOpt = tripRecordService.findById(BigInteger.ONE);
+        var tripRecordEntityOpt = tripRecordService.findById(BigInteger.valueOf(1000L));
         if (tripRecordEntityOpt.isPresent()) {
             return tripRecordEntityOpt.get().getFromAddressEntity().getGeometry();
         }
@@ -124,13 +131,12 @@ public class MapView extends VerticalLayout {
 
     private Component createFilterLayout() {
         HorizontalLayout hl = new HorizontalLayout();
-        tripDateTimePicker.setDatePlaceholder("Date");
-        tripDateTimePicker.setTimePlaceholder("Time");
-        tripDateTimePicker.setStep(Duration.of(600, ChronoUnit.SECONDS));
+        datePicker.setRequired(true);
+        datePicker.setErrorMessage("Date field is required for filling");
 
         tripsLimit.setValue(DEFAULT_TRIPS_LIMIT);
 
-        hl.add(tripDateTimePicker);
+        hl.add(datePicker, timePickerFrom, timePickerTo);
         hl.add(tripsLimit);
         return hl;
     }

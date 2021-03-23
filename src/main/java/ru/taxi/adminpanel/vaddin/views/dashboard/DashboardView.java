@@ -1,5 +1,6 @@
 package ru.taxi.adminpanel.vaddin.views.dashboard;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.grid.Grid;
@@ -14,9 +15,9 @@ import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
 import com.vaadin.flow.data.renderer.NumberRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +27,8 @@ import ru.taxi.adminpanel.backend.trip.TripRecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -36,8 +39,8 @@ import java.util.stream.Stream;
 @CssImport(value = "./styles/views/dashboard/dashboard-view.css", include = "lumo-badge")
 @JsModule("@vaadin/vaadin-lumo-styles/badge.js")
 @RouteAlias(value = "", layout = MainView.class)
-@PreserveOnRefresh
-public class DashboardView extends Div {
+//@Push(PushMode.MANUAL)
+public class DashboardView extends Div implements RouterLayout {
 
     private GridPro<TripRecordEntity> grid;
     private ListDataProvider<TripRecordEntity> dataProvider;
@@ -70,10 +73,12 @@ public class DashboardView extends Div {
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.MATERIAL_COLUMN_DIVIDERS);
         grid.setHeight("100%");
-        tripRecordService.findAll().whenComplete((tr, ex) -> {
-            dataProvider = new ListDataProvider<>(tr);
+        UI current = UI.getCurrent();
+        CompletableFuture.completedFuture(current.access(() -> {
+            List<TripRecordEntity> all = tripRecordService.findAll();
+            dataProvider = new ListDataProvider<>(all);
             grid.setDataProvider(dataProvider);
-        });
+        })).thenRun(current::push);
     }
 
     private void addColumnsToGrid() {
