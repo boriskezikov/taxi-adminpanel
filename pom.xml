@@ -6,7 +6,7 @@
     <groupId>ru.taxi</groupId>
     <artifactId>adminpanel</artifactId>
     <name>taxi-adminpanel</name>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <packaging>jar</packaging>
 
     <properties>
