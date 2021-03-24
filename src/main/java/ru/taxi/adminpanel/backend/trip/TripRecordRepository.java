@@ -14,5 +14,5 @@ import java.util.List;
 @Repository
 public interface TripRecordRepository extends JpaRepository<TripRecordEntity, BigInteger> {
 
-    Page<TripRecordEntity> findAllByTripBeginTimeAfterAndTripBeginTimeBefore(LocalDateTime b, LocalDateTime a, Pageable p);
+    List<TripRecordEntity> findAllByTripBeginTimeAfterAndTripBeginTimeBefore(LocalDateTime b, LocalDateTime a);
 }

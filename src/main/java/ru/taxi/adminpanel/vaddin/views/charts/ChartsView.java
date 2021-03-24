@@ -18,47 +18,39 @@ import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLayout;
 import lombok.extern.slf4j.Slf4j;
-import ru.taxi.adminpanel.backend.address.AddressEntity;
-import ru.taxi.adminpanel.backend.address.AddressRepository;
-import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
-import ru.taxi.adminpanel.backend.trip.TripRecordService;
+import ru.taxi.adminpanel.backend.background.statistics.GeneralStatisticsEntity;
+import ru.taxi.adminpanel.backend.background.statistics.StatisticsAccessor;
+import ru.taxi.adminpanel.backend.background.statistics.TripsPerRangeEntity;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
-import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collectors;
 
 @Slf4j
 @CssImport("./styles/views/charts/charts-view.css")
 @Route(value = "charts", layout = MainView.class)
 @PageTitle("Chartboard")
-//@Push(PushMode.MANUAL)
+//@PreserveOnRefresh
 public class ChartsView extends Div implements RouterLayout {
     private final Grid<String> grid = new Grid<>();
 
     private final H2 addressesCount = new H2();
     private final H2 tripsCount = new H2();
     private final H2 mostPopularArea = new H2();
-    private final TripRecordService tripRecordService;
-    private final AddressRepository addressRepository;
     private final Chart tripsPerRangeChart = new Chart(ChartType.SPLINE);
-    private static final int TRIPS_RANGE_CONST = 20;
+
+    private final StatisticsAccessor statisticsAccessor;
 
 
-    public ChartsView(TripRecordService tripRecordService, AddressRepository addressRepository) {
-        this.tripRecordService = tripRecordService;
-        this.addressRepository = addressRepository;
+    public ChartsView(StatisticsAccessor statisticsAccessor) {
+        this.statisticsAccessor = statisticsAccessor;
+
         addClassName("charts-view");
-
         grid.addColumn(String::valueOf).setHeader("City");
         grid.addColumn(new ComponentRenderer<>(item -> {
             Span span = new Span("Connected");
@@ -77,8 +69,7 @@ public class ChartsView extends Div implements RouterLayout {
 
         add(board);
 
-        UI current = UI.getCurrent();
-        CompletableFuture.runAsync(() -> current.access(this::populateCharts)).thenRun(current::push);
+        populateCharts();
     }
 
     private Board initBoard() {
@@ -103,33 +94,38 @@ public class ChartsView extends Div implements RouterLayout {
     }
 
     private void populateCharts() {
-        List<TripRecordEntity> trips = tripRecordService.findAll();
-        populateCitiesConnectedGrid(trips);
-        populateMostPopularRegionTab(trips);
-        populateTripsPerRangeChart(trips);
-        populateAddressesGeneratedTab();
+        GeneralStatisticsEntity generalStatisticsEntity = statisticsAccessor.loadStatistics();
+        populateCitiesConnectedGrid(generalStatisticsEntity.getCitiesInArea());
+        populateMostPopularRegionTab(generalStatisticsEntity.getMostPopularZip());
+        populateTripsPerRangeChart(generalStatisticsEntity.getTripsPerRangeEntities());
+        populateAddressesGeneratedTab(generalStatisticsEntity.getAddressesCount());
+        populateTripsTotal(generalStatisticsEntity.getTripsTotal());
     }
 
-    private void populateCitiesConnectedGrid(List<TripRecordEntity> trips) {
-        Set<String> citiesInTheArea = trips.stream().map(TripRecordEntity::getFromAddressEntity)
-                .map(AddressEntity::getCity)
-                .collect(Collectors.toSet());
-        tripsCount.setText(String.valueOf(trips.size()));
-        grid.setItems(citiesInTheArea);
+    private void populateCitiesConnectedGrid(String citiesString) {
+        if (citiesString == null || citiesString.isBlank()) {
+            return;
+        }
+        List<String> cities = Arrays.asList(citiesString.split(";"));
+        grid.setItems(cities);
     }
 
-    private void populateAddressesGeneratedTab() {
-        long addressesGenerated = addressRepository.count();
-        addressesCount.setText(String.valueOf(addressesGenerated));
+    private void populateTripsTotal(Long trips) {
+        tripsCount.setText(String.valueOf(trips == null ? "CALCULATING" : trips));
     }
 
-    private void populateMostPopularRegionTab(List<TripRecordEntity> trips) {
-        var areas = trips.parallelStream().map(t -> t.getFromAddressEntity().getZipCode()).collect(Collectors.groupingBy(s -> Objects.requireNonNullElse(s, "NO ZIPCODE"), Collectors.counting()));
-        String mostPopularZip = Collections.max(areas.entrySet(), Map.Entry.comparingByValue()).getKey();
-        mostPopularArea.setText(String.valueOf(mostPopularZip));
+    private void populateAddressesGeneratedTab(Long addressesGenerated) {
+        addressesCount.setText(String.valueOf(addressesGenerated == null ? "CALCULATING" : addressesGenerated));
     }
 
-    private void populateTripsPerRangeChart(List<TripRecordEntity> trips) {
+    private void populateMostPopularRegionTab(String mostPopularZip) {
+        mostPopularArea.setText(mostPopularZip == null ? "CALCULATING" : mostPopularZip);
+    }
+
+    private void populateTripsPerRangeChart(List<TripsPerRangeEntity> tripsPerRange) {
+        if (tripsPerRange == null || tripsPerRange.isEmpty()) {
+            return;
+        }
 
         tripsPerRangeChart.getConfiguration().setTitle("Trips in range times");
         tripsPerRangeChart.setTimeline(true);
@@ -137,15 +133,10 @@ public class ChartsView extends Div implements RouterLayout {
         configuration.getTooltip().setEnabled(true);
 
         DataSeries dataSeries = new DataSeries();
-        Map<Long, Long> collect = trips.stream().map(TripRecordEntity::getTripBeginTime).collect(Collectors.groupingBy(time -> {
-            var minutes = time.getMinute();
-            var minutesOver = minutes % TRIPS_RANGE_CONST;
-            return time.truncatedTo(ChronoUnit.MINUTES).withMinute(minutes - minutesOver).toInstant(ZoneOffset.UTC).toEpochMilli();
-        }, Collectors.counting()));
-        collect.entrySet().stream().sorted(Map.Entry.comparingByKey()).forEach((entry) -> {
+        tripsPerRange.forEach((entry) -> {
             var item = new DataSeriesItem();
-            item.setX(entry.getKey());
-            item.setY(entry.getValue());
+            item.setX(entry.getTimestamp());
+            item.setY(entry.getTripsCount());
             dataSeries.add(item);
         });
         configuration.addSeries(dataSeries);

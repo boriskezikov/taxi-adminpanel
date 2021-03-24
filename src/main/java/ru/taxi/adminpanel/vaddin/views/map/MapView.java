@@ -28,6 +28,7 @@ import ru.taxi.adminpanel.vaddin.views.main.MainView;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -45,9 +46,6 @@ public class MapView extends VerticalLayout {
     private static final String ICON_URL = "https://www.flowingcode.com/wp-content/uploads/2020/06/FCMarker.png";
     private final TripRecordService tripRecordService;
     protected String xGoogleApiKey = "AIzaSyB8V8hR1JKIG9L8ojccE5cOfMD4hS3seoA";
-    private final IntegerField tripsLimit = new IntegerField("Points number limit");
-
-    private static final int DEFAULT_TRIPS_LIMIT = 100;
 
     public MapView(TripRecordService tripRecordService) {
         this.gmaps = new GoogleMap(xGoogleApiKey, null, null);
@@ -84,15 +82,13 @@ public class MapView extends VerticalLayout {
             gmaps.getChildren().forEach(ch -> gmaps.removeMarker((GoogleMapMarker) ch));
             Optional<LocalTime> timePickerFromValue = Optional.ofNullable(timePickerFrom.getValue());
             Optional<LocalTime> timePickerToValue = Optional.ofNullable(timePickerTo.getValue());
-            int tripsLimitCount = tripsLimit.getValue() == null ? DEFAULT_TRIPS_LIMIT : tripsLimit.getValue();
-            Pageable pageable = PageRequest.of(0, tripsLimitCount);
 
             LocalTime timeFrom = timePickerFromValue.orElse(LocalTime.MIN);
             LocalTime timeTo = timePickerToValue.orElse(LocalTime.MAX);
 
             LocalDateTime searchDateTimeFrom = LocalDateTime.of(datePicker.getValue(), timeFrom);
             LocalDateTime searchDateTimeTo = LocalDateTime.of(datePicker.getValue(), timeTo);
-            Page<TripRecordEntity> rangedTrips = tripRecordService.findInRange(searchDateTimeFrom, searchDateTimeTo, pageable);
+            List<TripRecordEntity> rangedTrips = tripRecordService.findInRange(searchDateTimeFrom, searchDateTimeTo);
             rangedTrips.stream().parallel()
                     .forEach(tripRecordEntity -> {
                         AddressEntity from = tripRecordEntity.getFromAddressEntity();
@@ -133,11 +129,7 @@ public class MapView extends VerticalLayout {
         HorizontalLayout hl = new HorizontalLayout();
         datePicker.setRequired(true);
         datePicker.setErrorMessage("Date field is required for filling");
-
-        tripsLimit.setValue(DEFAULT_TRIPS_LIMIT);
-
         hl.add(datePicker, timePickerFrom, timePickerTo);
-        hl.add(tripsLimit);
         return hl;
     }
 }

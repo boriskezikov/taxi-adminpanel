@@ -22,6 +22,8 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
 import ru.taxi.adminpanel.backend.trip.TripRecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
@@ -75,8 +77,9 @@ public class DashboardView extends Div implements RouterLayout {
         grid.setHeight("100%");
         UI current = UI.getCurrent();
         CompletableFuture.completedFuture(current.access(() -> {
-            List<TripRecordEntity> all = tripRecordService.findAll();
-            dataProvider = new ListDataProvider<>(all);
+            //todo сделать форму поиска
+            Page<TripRecordEntity> all = tripRecordService.findAll(PageRequest.of(1, 500));
+            dataProvider = new ListDataProvider<>(all.getContent());
             grid.setDataProvider(dataProvider);
         })).thenRun(current::push);
     }

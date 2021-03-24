@@ -9,17 +9,19 @@ import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConf
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @PWA(
-        name = "Taxi adminal console",
+        name = "Taxi admin console",
         shortName = "Adminpanel",
         offlineResources = {
                 "./styles/offline.css",
                 "./images/offline.png"})
-@SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
+@Push
 @EnableCaching
 @EnableAsync
-@Push
+@EnableScheduling
+@SpringBootApplication(exclude = ErrorMvcAutoConfiguration.class)
 public class AdminpanelStarter extends SpringBootServletInitializer implements AppShellConfigurator {
 
     public static void main(String[] args) {
