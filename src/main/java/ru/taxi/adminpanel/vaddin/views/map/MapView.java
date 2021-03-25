@@ -11,15 +11,10 @@ import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import ru.taxi.adminpanel.backend.address.AddressEntity;
 import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
 import ru.taxi.adminpanel.backend.trip.TripRecordService;
@@ -34,13 +29,12 @@ import java.util.Optional;
 @Slf4j
 @Route(value = "googlemap", layout = MainView.class)
 @PageTitle("Map")
-@PreserveOnRefresh
 public class MapView extends VerticalLayout {
 
     private final GoogleMap gmaps;
     private final Button loadPointsButton = new Button("Load order points");
     private final Button cleanPointsButton = new Button("Clean map");
-    private final DatePicker datePicker = new DatePicker("Day");
+    private final DatePicker datePicker = new DatePicker("Calendar date");
     private final TimePicker timePickerFrom = new TimePicker("From time");
     private final TimePicker timePickerTo = new TimePicker("To time");
     private static final String ICON_URL = "https://www.flowingcode.com/wp-content/uploads/2020/06/FCMarker.png";
@@ -89,16 +83,18 @@ public class MapView extends VerticalLayout {
             LocalDateTime searchDateTimeFrom = LocalDateTime.of(datePicker.getValue(), timeFrom);
             LocalDateTime searchDateTimeTo = LocalDateTime.of(datePicker.getValue(), timeTo);
             List<TripRecordEntity> rangedTrips = tripRecordService.findInRange(searchDateTimeFrom, searchDateTimeTo);
-            rangedTrips.stream().parallel()
-                    .forEach(tripRecordEntity -> {
-                        AddressEntity from = tripRecordEntity.getFromAddressEntity();
-                        gmaps.addMarker(from.getFormattedAddress(), from.getGeometry(), true, ICON_URL);
-                    });
+            if (rangedTrips.isEmpty()) {
+                Notification.show("No trips found for provided range", 2000, Notification.Position.MIDDLE);
+                return;
+            }
+            rangedTrips.forEach(tripRecordEntity -> {
+                AddressEntity from = tripRecordEntity.getFromAddressEntity();
+                gmaps.addMarker(from.getFormattedAddress(), from.getGeometry(), true, ICON_URL);
+            });
         });
 
         cleanPointsButton.addClickListener(e -> gmaps.getChildren()
                 .forEach(ch -> gmaps.removeMarker((GoogleMapMarker) ch)));
-
 
     }
 

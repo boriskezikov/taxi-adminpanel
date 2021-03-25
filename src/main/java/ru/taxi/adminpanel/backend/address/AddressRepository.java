@@ -9,6 +9,5 @@ import java.math.BigInteger;
 @Repository
 public interface AddressRepository extends JpaRepository<AddressEntity, BigInteger> {
 
-
     long count();
 }

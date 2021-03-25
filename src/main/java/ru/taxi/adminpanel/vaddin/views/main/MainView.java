@@ -2,6 +2,7 @@ package ru.taxi.adminpanel.vaddin.views.main;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -85,10 +86,10 @@ public class MainView extends AppLayout {
     }
 
     private Component[] createMenuItems() {
-        return new Tab[]{createTab("Trips viewer page", DashboardView.class),
-                createTab("Artificial generator settings page", SettingsView.class),
-                createTab("Point map visual page", MapView.class),
-                createTab("Statistics visual page", ChartsView.class)};
+        return new Tab[]{createTab("TRIPS OBSERVER DASHBOARD", DashboardView.class),
+                createTab("SETTINGS", SettingsView.class),
+                createTab("VISUAL MAP", MapView.class),
+                createTab("STATISTICS DASHBOARD", ChartsView.class)};
     }
 
     private static Tab createTab(String text, Class<? extends Component> navigationTarget) {

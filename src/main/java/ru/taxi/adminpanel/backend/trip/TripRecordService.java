@@ -2,19 +2,17 @@ package ru.taxi.adminpanel.backend.trip;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.annotations.Cache;
-import org.modelmapper.ModelMapper;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import ru.taxi.adminpanel.backend.trip.repository.TripRecordRepository;
+import ru.taxi.adminpanel.backend.trip.repository.TripRecordRepositoryCustom;
 
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -23,29 +21,7 @@ import java.util.concurrent.CompletableFuture;
 public class TripRecordService {
 
     private final TripRecordRepository tripRecordRepository;
-    private final ModelMapper mapper;
-
-    public void createRecord(TripRecordDTO tripRecordDTO) {
-        TripRecordEntity entity = mapper.map(tripRecordDTO, TripRecordEntity.class);
-        entity.setUuid(UUID.randomUUID());
-        tripRecordRepository.save(entity);
-        log.info("Added new record: {} ", entity.getId());
-    }
-
-    public void updateRecord(TripRecordEntity source) {
-        tripRecordRepository.findById(source.getId())
-                .map(record -> {
-                    mapper.map(source, record);
-                    return record;
-                })
-                .map(tripRecordRepository::save);
-        log.info("Record updated: {} ", source.getId());
-    }
-
-    public void delete(BigInteger id) {
-        tripRecordRepository.deleteById(id);
-        log.info("Record deleted: {} ", id);
-    }
+    private final TripRecordRepositoryCustom tripRecordRepositoryCustom;
 
     @Async
     public CompletableFuture<List<TripRecordEntity>> findAllAsync() {
@@ -66,6 +42,13 @@ public class TripRecordService {
 
     public Page<TripRecordEntity> findAll(Pageable pageable) {
         return tripRecordRepository.findAll(pageable);
+    }
+
+    public List<TripRecordEntity> searchRecords(SearchTripRecordDTO searchTripRecordDTO) {
+        log.info("search() - Start fetching with params {}", searchTripRecordDTO);
+        List<TripRecordEntity> tripRecordEntities = tripRecordRepositoryCustom.find(searchTripRecordDTO);
+        log.info("search() - {} records found", tripRecordEntities.size());
+        return tripRecordEntities;
     }
 
 }

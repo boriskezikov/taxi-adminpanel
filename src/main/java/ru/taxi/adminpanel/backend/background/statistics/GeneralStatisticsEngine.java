@@ -4,12 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import ru.taxi.adminpanel.backend.address.AddressEntity;
 import ru.taxi.adminpanel.backend.address.AddressRepository;
 import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
-import ru.taxi.adminpanel.backend.trip.TripRecordRepository;
+import ru.taxi.adminpanel.backend.trip.repository.TripRecordRepository;
 
 import java.math.BigInteger;
 import java.time.ZoneOffset;

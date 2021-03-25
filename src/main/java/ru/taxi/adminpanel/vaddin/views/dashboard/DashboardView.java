@@ -1,14 +1,23 @@
 package ru.taxi.adminpanel.vaddin.views.dashboard;
 
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
+import com.vaadin.flow.component.datetimepicker.DateTimePicker;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.Grid.SelectionMode;
 import com.vaadin.flow.component.grid.GridVariant;
 import com.vaadin.flow.component.grid.HeaderRow;
 import com.vaadin.flow.component.gridpro.GridPro;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.renderer.LocalDateTimeRenderer;
@@ -22,15 +31,19 @@ import com.vaadin.flow.spring.annotation.SpringComponent;
 import com.vaadin.flow.spring.annotation.UIScope;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+import ru.taxi.adminpanel.backend.background.statistics.StatisticsAccessor;
+import ru.taxi.adminpanel.backend.trip.PriceComparatorEnum;
+import ru.taxi.adminpanel.backend.trip.SearchTripRecordDTO;
 import ru.taxi.adminpanel.backend.trip.TripRecordEntity;
 import ru.taxi.adminpanel.backend.trip.TripRecordService;
 import ru.taxi.adminpanel.vaddin.views.main.MainView;
 
+import java.math.BigInteger;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -41,7 +54,6 @@ import java.util.stream.Stream;
 @CssImport(value = "./styles/views/dashboard/dashboard-view.css", include = "lumo-badge")
 @JsModule("@vaadin/vaadin-lumo-styles/badge.js")
 @RouteAlias(value = "", layout = MainView.class)
-//@Push(PushMode.MANUAL)
 public class DashboardView extends Div implements RouterLayout {
 
     private GridPro<TripRecordEntity> grid;
@@ -55,13 +67,19 @@ public class DashboardView extends Div implements RouterLayout {
     private Grid.Column<TripRecordEntity> priceColumn;
     private Grid.Column<TripRecordEntity> beginColumn;
     private Grid.Column<TripRecordEntity> endColumn;
+    private final StatisticsAccessor statisticsAccessor;
 
-    public DashboardView(TripRecordService tripRecordService) {
+    private final Button searchButton = new Button("Search", (e) -> openSearchDialogue());
+
+
+    public DashboardView(TripRecordService tripRecordService, StatisticsAccessor statisticsAccessor) {
+        this.statisticsAccessor = statisticsAccessor;
         this.tripRecordService = tripRecordService;
         setId("dashboard-view");
         setSizeFull();
         createGrid();
         add(grid);
+        add(createButtonLayout());
     }
 
     private void createGrid() {
@@ -70,18 +88,74 @@ public class DashboardView extends Div implements RouterLayout {
         addFiltersToGrid();
     }
 
+    private Component createButtonLayout() {
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.addClassName("button-layout");
+        searchButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        buttonLayout.add(searchButton);
+        return buttonLayout;
+    }
+
     private void createGridComponent() {
         grid = new GridPro<>();
         grid.setSelectionMode(SelectionMode.MULTI);
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER, GridVariant.MATERIAL_COLUMN_DIVIDERS);
         grid.setHeight("100%");
-        UI current = UI.getCurrent();
-        CompletableFuture.completedFuture(current.access(() -> {
-            //todo сделать форму поиска
-            Page<TripRecordEntity> all = tripRecordService.findAll(PageRequest.of(1, 500));
-            dataProvider = new ListDataProvider<>(all.getContent());
-            grid.setDataProvider(dataProvider);
-        })).thenRun(current::push);
+        dataProvider = new ListDataProvider<>(new ArrayList<>());
+        grid.setDataProvider(dataProvider);
+        openSearchDialogue();
+    }
+
+    private void openSearchDialogue() {
+
+        var statisticsEntity = statisticsAccessor.loadStatistics();
+        if (statisticsEntity.getCitiesInArea() == null) {
+            Dialog dialog = new Dialog();
+            dialog.add(new Html("<div>Statistics is in collecting process.<br> Try again in a few minutes</div>"));
+            dialog.open();
+            return;
+        }
+        var dialog = new Dialog();
+        var id = new IntegerField("Id", "ex. 12");
+        var city = new ComboBox<String>("City");
+        city.setItems(statisticsEntity.getCitiesInArea().split(";"));
+
+        var price = new IntegerField("Price", "ex. 220");
+        var fromDateTime = new DateTimePicker("From date/time");
+        var toDateTime = new DateTimePicker("To date/time");
+        var uuid = new TextField("UUID", "ex. d3b709cf-a413-46fc-8bfa-b5f671343bf1");
+        var streetFromName = new TextField("Street from name", "ex.Калининский пр-т");
+        var streetFromNumber = new IntegerField("Street from number", "ex. 2");
+        var streetToName = new TextField("Street to name", "ex.Воровского");
+        var streetToNumber = new IntegerField("Street to number", "ex.10");
+        var searchButton = new Button("Search", e -> {
+            var criteria = SearchTripRecordDTO.builder()
+                    .city(city.getValue())
+                    .streetFrom(SearchTripRecordDTO.Street.builder()
+                            .streetName(!Objects.equals(streetFromName.getValue(), "") ? streetFromName.getValue() : null)
+                            .streetNumber(streetFromNumber.getValue()).build())
+                    .streetTo(SearchTripRecordDTO.Street.builder()
+                            .streetName(!Objects.equals(streetToName.getValue(), "") ? streetToName.getValue() : null)
+                            .streetNumber(streetToNumber.getValue()).build())
+                    .uuid(!Objects.equals(uuid.getValue(), "") ? UUID.fromString(uuid.getValue()) : null)
+                    .price(Objects.nonNull(price.getValue()) ? price.getValue().doubleValue() : null)
+                    .priceComparator(PriceComparatorEnum.HIGHER)
+                    .fromTime(fromDateTime.getValue())
+                    .toTime(toDateTime.getValue())
+                    .id(id.getValue() != null ? BigInteger.valueOf(id.getValue()) : null).build();
+            List<TripRecordEntity> tripRecordEntities = tripRecordService.searchRecords(criteria);
+            grid.setItems(tripRecordEntities);
+            dialog.close();
+        });
+
+        HorizontalLayout h1 = new HorizontalLayout();
+        HorizontalLayout h2 = new HorizontalLayout();
+        HorizontalLayout h3 = new HorizontalLayout();
+        h1.add(id, uuid, city, price);
+        h2.add(streetFromName, streetFromNumber, streetToName, streetToNumber);
+        h3.add(fromDateTime, toDateTime);
+        dialog.add(h1, h2, h3, searchButton);
+        dialog.open();
     }
 
     private void addColumnsToGrid() {
@@ -112,7 +186,7 @@ public class DashboardView extends Div implements RouterLayout {
         String header = "From address";
         fromColumn = grid.addColumn(TripRecordEntity::getFromAddressEntity).setHeader(header)
                 .setFlexGrow(1)
-                .setAutoWidth(true);
+                .setAutoWidth(true).setFlexGrow(100);
         log.debug("{} column created", header);
     }
 
