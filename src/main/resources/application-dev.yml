@@ -18,6 +18,9 @@ logging:
     ru.taxi.adminpanel: info
     vaadin: info
 
-generator:
-  host: ${GENERATOR_HOST_URL:http://localhost:8081}
+services:
+  generator:
+    host: ${GENERATOR_HOST_URL:http://localhost:8081}
+  metrics-server:
+    host: ${METRICS_HOST_URL:http://localhost:8082}
 
